@@ -1,0 +1,145 @@
+import { beforeEach, describe, expect, it } from "vitest";
+import { devtoolsStoreApi } from "../../store";
+import { createDevtoolsMiddleware } from "../devtoolsMiddleware";
+import type { MiddlewareContext } from "@okyrychenko-dev/react-action-guard";
+
+describe("devtoolsMiddleware", () => {
+  beforeEach(() => {
+    const store = devtoolsStoreApi.getState();
+    store.clearEvents();
+  });
+
+  it("should record add events", () => {
+    const middleware = createDevtoolsMiddleware();
+    const context: MiddlewareContext = {
+      action: "add",
+      blockerId: "test-blocker",
+      timestamp: Date.now(),
+      config: {
+        scope: "global",
+        reason: "Test",
+        priority: 10,
+      },
+      prevState: undefined,
+    };
+
+    void middleware(context);
+
+    const store = devtoolsStoreApi.getState();
+    expect(store.events).toHaveLength(1);
+    expect(store.events[0].action).toBe("add");
+    expect(store.events[0].blockerId).toBe("test-blocker");
+  });
+
+  it("should record remove events with duration", () => {
+    const middleware = createDevtoolsMiddleware();
+    const addTime = Date.now();
+    const removeTime = addTime + 1000;
+
+    // Add blocker
+    void middleware({
+      action: "add",
+      blockerId: "test-blocker",
+      timestamp: addTime,
+      config: { scope: "global" },
+      prevState: undefined,
+    });
+
+    // Remove blocker
+    void middleware({
+      action: "remove",
+      blockerId: "test-blocker",
+      timestamp: removeTime,
+      config: { scope: "global" },
+      prevState: undefined,
+    });
+
+    const store = devtoolsStoreApi.getState();
+    expect(store.events).toHaveLength(2);
+
+    // Events are prepended, so remove event is first (index 0)
+    const removeEvent = store.events[0];
+    expect(removeEvent.action).toBe("remove");
+    expect(removeEvent.duration).toBe(1000);
+  });
+
+  it("should record update events", () => {
+    const middleware = createDevtoolsMiddleware();
+    const context: MiddlewareContext = {
+      action: "update",
+      blockerId: "test-blocker",
+      timestamp: Date.now(),
+      config: {
+        scope: "global",
+        priority: 20,
+      },
+      prevState: {
+        scope: "global",
+        priority: 10,
+      },
+    };
+
+    void middleware(context);
+
+    const store = devtoolsStoreApi.getState();
+    expect(store.events).toHaveLength(1);
+    expect(store.events[0].action).toBe("update");
+    expect(store.events[0].prevState).toEqual({
+      scope: "global",
+      priority: 10,
+    });
+  });
+
+  it("should handle multiple blockers independently", () => {
+    const middleware = createDevtoolsMiddleware();
+    const timestamp = Date.now();
+
+    void middleware({
+      action: "add",
+      blockerId: "blocker-1",
+      timestamp,
+      config: { scope: "scope-1" },
+      prevState: undefined,
+    });
+
+    void middleware({
+      action: "add",
+      blockerId: "blocker-2",
+      timestamp: timestamp + 100,
+      config: { scope: "scope-2" },
+      prevState: undefined,
+    });
+
+    void middleware({
+      action: "remove",
+      blockerId: "blocker-1",
+      timestamp: timestamp + 500,
+      config: { scope: "scope-1" },
+      prevState: undefined,
+    });
+
+    const store = devtoolsStoreApi.getState();
+    expect(store.events).toHaveLength(3);
+
+    const removeEvent = store.events.find(
+      (e) => e.action === "remove" && e.blockerId === "blocker-1"
+    );
+    expect(removeEvent?.duration).toBe(500);
+  });
+
+  it("should handle remove without matching add", () => {
+    const middleware = createDevtoolsMiddleware();
+
+    void middleware({
+      action: "remove",
+      blockerId: "unknown-blocker",
+      timestamp: Date.now(),
+      config: { scope: "global" },
+      prevState: undefined,
+    });
+
+    const store = devtoolsStoreApi.getState();
+    expect(store.events).toHaveLength(1);
+    expect(store.events[0].duration).toBeUndefined();
+  });
+});
