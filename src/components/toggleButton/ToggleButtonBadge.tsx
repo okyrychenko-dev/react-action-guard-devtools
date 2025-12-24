@@ -14,9 +14,7 @@ function ToggleButtonBadge(props: ToggleButtonBadgeProps): ReactElement | null {
     return null;
   }
 
-  return (
-    <Badge className={getBadgeClassName(isPaused)}>{count}</Badge>
-  );
+  return <Badge className={getBadgeClassName(isPaused)}>{count}</Badge>;
 }
 
 export default ToggleButtonBadge;

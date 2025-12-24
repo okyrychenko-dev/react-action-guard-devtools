@@ -1,20 +1,20 @@
 import { uiBlockingStoreApi } from "@okyrychenko-dev/react-action-guard";
-import { ReactElement, useCallback, useEffect, useMemo } from "react";
+import { ReactElement, useEffect, useMemo, useRef } from "react";
 import { DEVTOOLS_MIDDLEWARE_NAME, createDevtoolsMiddleware } from "../../middleware";
 import { useDevtoolsStore } from "../../store";
+import { getDevtoolsKeyboardAction } from "./ActionGuardDevtools.utils";
 import ActionGuardDevtoolsContent from "./ActionGuardDevtoolsContent";
 import type { ActionGuardDevtoolsProps } from "./ActionGuardDevtools.types";
-import { getDevtoolsKeyboardAction } from "./ActionGuardDevtools.utils";
 import "../../styles/theme.css";
 
-function ActionGuardDevtools(props: ActionGuardDevtoolsProps): ReactElement | null {
-  const {
-    position = "right",
-    defaultOpen = false,
-    maxEvents = 200,
-    showInProduction = false,
-    store: customStore,
-  } = props;
+/**
+ * Internal component that handles all the devtools logic.
+ * Separated to allow early return in production without breaking hooks rules.
+ */
+function ActionGuardDevtoolsInternal(
+  props: Omit<ActionGuardDevtoolsProps, "showInProduction">
+): ReactElement {
+  const { position = "right", defaultOpen = false, maxEvents = 200, store: customStore } = props;
 
   const { setOpen, setMaxEvents, isOpen, togglePause, clearEvents } = useDevtoolsStore();
 
@@ -39,10 +39,20 @@ function ActionGuardDevtools(props: ActionGuardDevtoolsProps): ReactElement | nu
     setMaxEvents(maxEvents);
   }, [defaultOpen, maxEvents, setOpen, setMaxEvents]);
 
-  // Keyboard shortcuts handler
-  const handleKeyDown = useCallback(
-    (event: KeyboardEvent) => {
+  // Stable ref for keyboard handler to avoid re-registering event listener
+  const stateRef = useRef({ isOpen, setOpen, togglePause, clearEvents });
+
+  // Keep ref in sync with latest values
+  useEffect(() => {
+    stateRef.current = { isOpen, setOpen, togglePause, clearEvents };
+  }, [isOpen, setOpen, togglePause, clearEvents]);
+
+  // Register keyboard shortcuts once
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent): void => {
+      const { isOpen, setOpen, togglePause, clearEvents } = stateRef.current;
       const action = getDevtoolsKeyboardAction(event, isOpen);
+
       if (!action) {
         return;
       }
@@ -62,25 +72,33 @@ function ActionGuardDevtools(props: ActionGuardDevtoolsProps): ReactElement | nu
           clearEvents();
           break;
       }
-    },
-    [isOpen, setOpen, togglePause, clearEvents]
-  );
+    };
 
-  // Register keyboard shortcuts
-  useEffect(() => {
     document.addEventListener("keydown", handleKeyDown);
 
     return () => {
       document.removeEventListener("keydown", handleKeyDown);
     };
-  }, [handleKeyDown]);
+  }, []);
 
-  // Don't render in production unless explicitly enabled
+  return <ActionGuardDevtoolsContent position={position} store={customStore} />;
+}
+
+/**
+ * ActionGuardDevtools - Developer tools panel for UI blocking visualization.
+ *
+ * In production, returns null immediately without initializing any stores or event listeners.
+ * Use `showInProduction` prop to override this behavior if needed.
+ */
+function ActionGuardDevtools(props: ActionGuardDevtoolsProps): ReactElement | null {
+  const { showInProduction = false, ...others } = props;
+
+  // Early return in production - no hooks called, no resources allocated
   if (process.env.NODE_ENV === "production" && !showInProduction) {
     return null;
   }
 
-  return <ActionGuardDevtoolsContent position={position} store={customStore} />;
+  return <ActionGuardDevtoolsInternal {...others} />;
 }
 
 export default ActionGuardDevtools;

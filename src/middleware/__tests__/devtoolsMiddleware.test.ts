@@ -142,4 +142,39 @@ describe("devtoolsMiddleware", () => {
     expect(store.events).toHaveLength(1);
     expect(store.events[0].duration).toBeUndefined();
   });
+
+  it("should record clear events with count", () => {
+    const middleware = createDevtoolsMiddleware();
+    const context: MiddlewareContext = {
+      action: "clear",
+      blockerId: "*",
+      timestamp: Date.now(),
+      count: 5,
+    };
+
+    void middleware(context);
+
+    const store = devtoolsStoreApi.getState();
+    expect(store.events).toHaveLength(1);
+    expect(store.events[0].action).toBe("clear");
+    expect(store.events[0].blockerId).toBe("*");
+  });
+
+  it("should record clear_scope events with scope and count", () => {
+    const middleware = createDevtoolsMiddleware();
+    const context: MiddlewareContext = {
+      action: "clear_scope",
+      blockerId: "*",
+      timestamp: Date.now(),
+      scope: "checkout",
+      count: 3,
+    };
+
+    void middleware(context);
+
+    const store = devtoolsStoreApi.getState();
+    expect(store.events).toHaveLength(1);
+    expect(store.events[0].action).toBe("clear_scope");
+    expect(store.events[0].blockerId).toBe("*");
+  });
 });

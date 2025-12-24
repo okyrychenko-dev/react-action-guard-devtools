@@ -1,4 +1,4 @@
-import { DEFAULT_FILTER, DEFAULT_MAX_EVENTS, DEFAULT_TAB } from "./devtoolsStore.constants";
+import { DEFAULT_MAX_EVENTS, DEFAULT_TAB, createDefaultFilter } from "./devtoolsStore.constants";
 import type { DevtoolsEvent, DevtoolsStore } from "../types/devtools.types";
 import type { StateCreator } from "zustand";
 
@@ -11,128 +11,139 @@ import type { StateCreator } from "zustand";
 export const createDevtoolsActions: StateCreator<DevtoolsStore, [], [], DevtoolsStore> = (
   set,
   get
-) => ({
-  // Initial State
-  events: [],
-  maxEvents: DEFAULT_MAX_EVENTS,
-  isOpen: false,
-  isMinimized: false,
-  activeTab: DEFAULT_TAB,
-  filter: DEFAULT_FILTER,
-  selectedEventId: null,
-  isPaused: false,
+) => {
+  let eventCounter = 0;
 
-  // Actions
-  /**
-   * Add a new event to history
-   *
-   * @param eventData - Event data without ID (auto-generated)
-   */
-  addEvent: (eventData): void => {
-    if (get().isPaused) {
-      return;
+  const createEventId = (eventData: Omit<DevtoolsEvent, "id">): string => {
+    eventCounter += 1;
+    return `${String(eventData.timestamp)}-${eventData.blockerId}-${eventCounter.toString(36)}`;
+  };
+
+  const trimEvents = (events: Array<DevtoolsEvent>, maxEvents: number): Array<DevtoolsEvent> => {
+    if (events.length <= maxEvents) {
+      return events;
     }
 
-    const event: DevtoolsEvent = {
-      ...eventData,
-      id: `${String(eventData.timestamp)}-${eventData.blockerId}-${Math.random().toString(36).slice(2, 8)}`,
-    };
+    return events.slice(0, maxEvents);
+  };
 
-    set((state) => {
-      const newEvents = [event, ...state.events];
+  return {
+    // Initial State
+    events: [],
+    maxEvents: DEFAULT_MAX_EVENTS,
+    isOpen: false,
+    isMinimized: false,
+    activeTab: DEFAULT_TAB,
+    filter: createDefaultFilter(),
+    selectedEventId: null,
+    isPaused: false,
 
-      // Trim to max events (circular buffer)
-      if (newEvents.length > state.maxEvents) {
-        newEvents.pop();
+    // Actions
+    /**
+     * Add a new event to history
+     *
+     * @param eventData - Event data without ID (auto-generated)
+     */
+    addEvent: (eventData): void => {
+      if (get().isPaused) {
+        return;
       }
 
-      return { events: newEvents };
-    });
-  },
+      const event: DevtoolsEvent = {
+        ...eventData,
+        id: createEventId(eventData),
+      };
 
-  /**
-   * Clear all events from history
-   */
-  clearEvents: (): void => {
-    set({ events: [], selectedEventId: null });
-  },
+      set((state) => {
+        const newEvents = [event, ...state.events];
 
-  /**
-   * Toggle panel open/closed state
-   */
-  toggleOpen: (): void => {
-    set((state) => ({ isOpen: !state.isOpen }));
-  },
+        return { events: trimEvents(newEvents, state.maxEvents) };
+      });
+    },
 
-  /**
-   * Set panel open state
-   *
-   * @param open - Whether panel should be open
-   */
-  setOpen: (open): void => {
-    set({ isOpen: open });
-  },
+    /**
+     * Clear all events from history
+     */
+    clearEvents: (): void => {
+      set({ events: [], selectedEventId: null });
+    },
 
-  /**
-   * Toggle minimized state
-   */
-  toggleMinimized: (): void => {
-    set((state) => ({ isMinimized: !state.isMinimized }));
-  },
+    /**
+     * Toggle panel open/closed state
+     */
+    toggleOpen: (): void => {
+      set((state) => ({ isOpen: !state.isOpen }));
+    },
 
-  /**
-   * Set active tab
-   *
-   * @param tab - Tab to activate
-   */
-  setActiveTab: (tab): void => {
-    set({ activeTab: tab, selectedEventId: null });
-  },
+    /**
+     * Set panel open state
+     *
+     * @param open - Whether panel should be open
+     */
+    setOpen: (open): void => {
+      set({ isOpen: open });
+    },
 
-  /**
-   * Update filter settings (partial update)
-   *
-   * @param filterUpdate - Partial filter update
-   */
-  setFilter: (filterUpdate): void => {
-    set((state) => ({
-      filter: { ...state.filter, ...filterUpdate },
-    }));
-  },
+    /**
+     * Toggle minimized state
+     */
+    toggleMinimized: (): void => {
+      set((state) => ({ isMinimized: !state.isMinimized }));
+    },
 
-  /**
-   * Reset filters to default
-   */
-  resetFilter: (): void => {
-    set({ filter: DEFAULT_FILTER });
-  },
+    /**
+     * Set active tab
+     *
+     * @param tab - Tab to activate
+     */
+    setActiveTab: (tab): void => {
+      set({ activeTab: tab, selectedEventId: null });
+    },
 
-  /**
-   * Select an event for detail view
-   *
-   * @param eventId - Event ID to select (null to deselect)
-   */
-  selectEvent: (eventId): void => {
-    set({ selectedEventId: eventId });
-  },
+    /**
+     * Update filter settings (partial update)
+     *
+     * @param filterUpdate - Partial filter update
+     */
+    setFilter: (filterUpdate): void => {
+      set((state) => ({
+        filter: { ...state.filter, ...filterUpdate },
+      }));
+    },
 
-  /**
-   * Toggle pause state (stops/resumes recording)
-   */
-  togglePause: (): void => {
-    set((state) => ({ isPaused: !state.isPaused }));
-  },
+    /**
+     * Reset filters to default
+     */
+    resetFilter: (): void => {
+      set({ filter: createDefaultFilter() });
+    },
 
-  /**
-   * Set maximum events limit
-   *
-   * @param max - Maximum number of events to keep
-   */
-  setMaxEvents: (max): void => {
-    set((state) => {
-      const events = state.events.length > max ? state.events.slice(0, max) : state.events;
+    /**
+     * Select an event for detail view
+     *
+     * @param eventId - Event ID to select (null to deselect)
+     */
+    selectEvent: (eventId): void => {
+      set({ selectedEventId: eventId });
+    },
 
-      return { maxEvents: max, events };
-    });
-  },
-});
+    /**
+     * Toggle pause state (stops/resumes recording)
+     */
+    togglePause: (): void => {
+      set((state) => ({ isPaused: !state.isPaused }));
+    },
+
+    /**
+     * Set maximum events limit
+     *
+     * @param max - Maximum number of events to keep
+     */
+    setMaxEvents: (max): void => {
+      set((state) => ({
+        maxEvents: max,
+        events: trimEvents(state.events, max),
+      }));
+    },
+  };
+};

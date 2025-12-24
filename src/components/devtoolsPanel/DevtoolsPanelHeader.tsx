@@ -3,12 +3,12 @@ import { CloseIcon, MinimizeIcon, PauseIcon, PlayIcon, ShieldIcon, TrashIcon } f
 import { MaximizeIcon } from "../../icons/Maximize";
 import { COLORS } from "../../styles/tokens";
 import { Badge, IconButton } from "../shared";
+import styles from "./DevtoolsPanel.module.css";
 import {
   getMinimizeButtonTitle,
   getPauseButtonClassName,
   getPauseButtonTitle,
 } from "./DevtoolsPanelHeader.utils";
-import styles from "./DevtoolsPanel.module.css";
 
 interface DevtoolsPanelHeaderProps {
   eventsCount: number;

@@ -23,7 +23,7 @@ function Timeline(): ReactElement {
 
   // Clear selection if selected event was removed from circular buffer
   useEffect(() => {
-    if (selectedEventId && !allEvents.some((e) => (e as { id: string }).id === selectedEventId)) {
+    if (selectedEventId && !allEvents.some((event) => event.id === selectedEventId)) {
       selectEvent(null);
     }
   }, [selectedEventId, allEvents, selectEvent]);

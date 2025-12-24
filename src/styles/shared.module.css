@@ -18,7 +18,9 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: background 0.15s, color 0.15s;
+  transition:
+    background 0.15s,
+    color 0.15s;
 }
 
 .emptyState {
@@ -61,8 +63,33 @@
   color: rgb(var(--ag-info-rgb));
 }
 
-.eventBadgeAction[data-action="cancel"],
 .eventBadgeAction[data-action="timeout"] {
   background: rgb(var(--ag-warning-rgb) / 0.13);
   color: rgb(var(--ag-warning-rgb));
+}
+
+.eventBadgeAction[data-action="clear"],
+.eventBadgeAction[data-action="clear_scope"] {
+  background: rgb(var(--ag-info-rgb) / 0.1);
+  color: rgb(var(--ag-info-rgb) / 0.8);
+}
+
+.errorBoundary {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  gap: 8px;
+  color: var(--ag-text-muted);
+}
+
+.errorTitle {
+  font-weight: 600;
+  color: rgb(var(--ag-error-rgb));
+}
+
+.errorMessage {
+  font-size: 12px;
+  opacity: 0.8;
 }

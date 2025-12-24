@@ -1,7 +1,7 @@
 import { clsx } from "clsx";
 import { ReactElement } from "react";
-import { DEVTOOLS_TABS } from "./DevtoolsPanelTabs.utils";
 import styles from "./DevtoolsPanel.module.css";
+import { DEVTOOLS_TABS } from "./DevtoolsPanelTabs.utils";
 import type { DevtoolsState } from "../../types";
 
 interface DevtoolsPanelTabsProps {

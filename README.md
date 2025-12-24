@@ -10,7 +10,7 @@
 
 - 📊 **Real-time Timeline** - Visual timeline of all blocking events with duration tracking
 - 🎯 **Active Blockers View** - See all currently active blockers at a glance
-- 🔍 **Filtering** - Search by blocker ID or reason (advanced filters via store API)
+- 🔍 **Filtering** - Search by blocker ID, reason, or scope (advanced filters via store API)
 - ⏸️ **Pause/Resume** - Pause event recording to inspect specific moments
 - 📝 **Detailed Event Info** - View full configuration, duration, and state changes
 - 🎨 **Customizable Position** - Place devtools panel on the left or right
@@ -216,7 +216,7 @@ See all currently active blockers with:
 
 Filter events by:
 
-- **Search**: Search by blocker ID or reason
+- **Search**: Search by blocker ID, reason, or scope
 
 For action/scope filtering, use `useDevtoolsStore` and `setFilter` in your own UI.
 
@@ -241,9 +241,6 @@ The package is written in TypeScript and includes full type definitions:
 
 ```typescript
 import type {
-  // Component types
-  ActionGuardDevtoolsProps,
-
   // Event types
   DevtoolsEvent,
   DevtoolsFilter,

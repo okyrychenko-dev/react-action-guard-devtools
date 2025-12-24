@@ -7,10 +7,7 @@ export function getPositionClass(position: DevtoolsPosition): string {
   return position === "left" ? positionStyles.positionLeft : positionStyles.positionRight;
 }
 
-export function getPanelClassName(
-  position: DevtoolsPosition,
-  isMinimized: boolean
-): string {
+export function getPanelClassName(position: DevtoolsPosition, isMinimized: boolean): string {
   return clsx(
     styles.panel,
     positionStyles.positionBase,

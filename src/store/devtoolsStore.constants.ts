@@ -1,10 +1,16 @@
 import type { DevtoolsFilter } from "../types/devtools.types";
 
 export const DEFAULT_FILTER: DevtoolsFilter = {
-  actions: ["add", "remove", "update", "cancel", "timeout"],
+  actions: ["add", "remove", "update", "timeout", "clear", "clear_scope"],
   scopes: [],
   search: "",
 };
+
+export const createDefaultFilter = (): DevtoolsFilter => ({
+  actions: [...DEFAULT_FILTER.actions],
+  scopes: [...DEFAULT_FILTER.scopes],
+  search: DEFAULT_FILTER.search,
+});
 
 export const DEFAULT_MAX_EVENTS = 200;
 

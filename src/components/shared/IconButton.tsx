@@ -1,4 +1,4 @@
-import clsx from "clsx";
+import { clsx } from "clsx";
 import { ButtonHTMLAttributes, ReactElement } from "react";
 import sharedStyles from "../../styles/shared.module.css";
 

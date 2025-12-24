@@ -1,5 +1,6 @@
 import { ReactElement } from "react";
 import { ActiveBlockers } from "../activeBlockers";
+import { ErrorBoundary } from "../shared";
 import { Timeline } from "../timeline";
 import type { DevtoolsState } from "../../types";
 import type { UIBlockingStoreApi } from "../actionGuardDevtools";
@@ -12,7 +13,11 @@ interface DevtoolsPanelContentProps {
 function DevtoolsPanelContent(props: DevtoolsPanelContentProps): ReactElement {
   const { activeTab, store } = props;
 
-  return activeTab === "timeline" ? <Timeline /> : <ActiveBlockers store={store} />;
+  return (
+    <ErrorBoundary>
+      {activeTab === "timeline" ? <Timeline /> : <ActiveBlockers store={store} />}
+    </ErrorBoundary>
+  );
 }
 
 export default DevtoolsPanelContent;

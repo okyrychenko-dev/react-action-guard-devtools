@@ -188,7 +188,14 @@ describe("devtoolsStore", () => {
       const state = devtoolsStoreApi.getState();
       expect(state.filter.search).toBe("");
       expect(state.filter.scopes).toEqual([]);
-      expect(state.filter.actions).toEqual(["add", "remove", "update", "cancel", "timeout"]);
+      expect(state.filter.actions).toEqual([
+        "add",
+        "remove",
+        "update",
+        "timeout",
+        "clear",
+        "clear_scope",
+      ]);
     });
   });
 
@@ -270,7 +277,7 @@ describe("devtoolsStore", () => {
         isMinimized: false,
         activeTab: "timeline",
         filter: {
-          actions: ["add", "remove", "update", "cancel", "timeout"],
+          actions: ["add", "update", "remove", "timeout", "clear", "clear_scope"],
           scopes: ["scope-a"],
           search: "",
         },
@@ -312,9 +319,58 @@ describe("devtoolsStore", () => {
         isMinimized: false,
         activeTab: "timeline",
         filter: {
-          actions: ["add", "remove", "update", "cancel", "timeout"],
+          actions: ["add", "update", "remove", "timeout", "clear", "clear_scope"],
           scopes: ["scope-c"],
           search: "",
+        },
+        selectedEventId: null,
+        isPaused: false,
+        addEvent: noopAddEvent,
+        clearEvents: noop,
+        toggleOpen: noop,
+        setOpen: noopSetOpen,
+        toggleMinimized: noop,
+        setActiveTab: noopSetActiveTab,
+        setFilter: noopSetFilter,
+        resetFilter: noop,
+        selectEvent: noopSelectEvent,
+        togglePause: noop,
+        setMaxEvents: noopSetMaxEvents,
+      };
+
+      const filtered = selectFilteredEvents(state);
+      expect(filtered).toHaveLength(1);
+      expect(filtered[0].id).toBe("1");
+    });
+
+    it("should match search query against scope", () => {
+      const events: Array<DevtoolsEvent> = [
+        {
+          id: "1",
+          action: "add",
+          blockerId: "blocker-1",
+          timestamp: 1,
+          config: { scope: ["alpha", "beta"] },
+        },
+        {
+          id: "2",
+          action: "add",
+          blockerId: "blocker-2",
+          timestamp: 2,
+          config: { scope: "gamma" },
+        },
+      ];
+
+      const state: DevtoolsStore = {
+        events,
+        maxEvents: 200,
+        isOpen: false,
+        isMinimized: false,
+        activeTab: "timeline",
+        filter: {
+          actions: ["add", "remove", "update", "timeout", "clear", "clear_scope"],
+          scopes: [],
+          search: "beta",
         },
         selectedEventId: null,
         isPaused: false,

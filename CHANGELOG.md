@@ -5,7 +5,37 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.1.0] - 2025-12-22
+## [Unreleased]
+
+## [0.1.2] - 2024-12-24
+
+### Changed
+
+- ⬆️ Updated peer dependency: `@okyrychenko-dev/react-action-guard` from `^0.5.0` to `^0.6.0`
+  - Support for new middleware events (`clear`, `clear_scope`)
+  - Automatically tracks clear operations in timeline
+  - Compatible with priority validation and enhanced timeout handling
+
+### Added
+
+- 🧹 Timeline visualization for `clear` and `clear_scope` events
+  - Clear events help debug bulk blocker removal operations
+  - Scope-specific clears are clearly distinguished with color coding
+  - Duration tracking for clear operations
+- 🧪 Added 2 new tests for clear event recording
+
+### Removed
+
+- ❌ Removed support for deprecated `cancel` action type
+
+## [0.1.1] - 2024-12-23
+
+### Fixed
+
+- 📚 Documentation improvements
+- 🐛 Minor bug fixes
+
+## [0.1.0] - 2024-12-22
 
 ### Added
 

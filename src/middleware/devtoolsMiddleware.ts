@@ -9,6 +9,30 @@ export const DEVTOOLS_MIDDLEWARE_NAME = "action-guard-devtools";
 export function createDevtoolsMiddleware(): Middleware {
   // Track add timestamps for duration calculation
   const addTimestamps = new Map<string, number>();
+  const terminalActions = new Set<MiddlewareContext["action"]>([
+    "remove",
+    "timeout",
+    "clear",
+    "clear_scope",
+  ]);
+
+  const getDuration = (
+    action: MiddlewareContext["action"],
+    blockerId: string,
+    timestamp: number
+  ): number | undefined => {
+    if (!terminalActions.has(action)) {
+      return undefined;
+    }
+
+    const addTime = addTimestamps.get(blockerId);
+    if (addTime === undefined) {
+      return undefined;
+    }
+
+    addTimestamps.delete(blockerId);
+    return timestamp - addTime;
+  };
 
   return (context: MiddlewareContext): void => {
     const { addEvent } = devtoolsStoreApi.getState();
@@ -18,19 +42,8 @@ export function createDevtoolsMiddleware(): Middleware {
       addTimestamps.set(context.blockerId, context.timestamp);
     }
 
-    // Calculate duration for remove, timeout, or cancel events
-    let duration: number | undefined;
-    if (
-      context.action === "remove" ||
-      context.action === "timeout" ||
-      context.action === "cancel"
-    ) {
-      const addTime = addTimestamps.get(context.blockerId);
-      if (addTime !== undefined) {
-        duration = context.timestamp - addTime;
-        addTimestamps.delete(context.blockerId);
-      }
-    }
+    // Calculate duration for terminal events
+    const duration = getDuration(context.action, context.blockerId, context.timestamp);
 
     // Record the event
     addEvent({

@@ -1,4 +1,4 @@
-import clsx from "clsx";
+import { clsx } from "clsx";
 import { ReactElement, ReactNode } from "react";
 import sharedStyles from "../../styles/shared.module.css";
 
