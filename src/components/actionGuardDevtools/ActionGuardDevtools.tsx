@@ -85,10 +85,98 @@ function ActionGuardDevtoolsInternal(
 }
 
 /**
- * ActionGuardDevtools - Developer tools panel for UI blocking visualization.
+ * ActionGuardDevtools - Visual developer tools panel for debugging UI blocking.
  *
- * In production, returns null immediately without initializing any stores or event listeners.
- * Use `showInProduction` prop to override this behavior if needed.
+ * This component provides a floating developer tools panel that visualizes all UI blocking
+ * events in real-time. It shows active blockers, their priorities, scopes, and provides
+ * a timeline of all blocking events with filtering and search capabilities.
+ *
+ * **Key Features:**
+ * - Real-time visualization of active blockers
+ * - Timeline of all blocking events (add, remove, timeout)
+ * - Filter by action type, scope, or search term
+ * - Pause/resume event capture
+ * - Keyboard shortcuts (Esc to close, P to pause, C to clear)
+ * - Draggable and resizable panel
+ * - Works with both global store and custom store instances
+ *
+ * **Performance:**
+ * - Automatically disabled in production builds (returns `null`)
+ * - Only allocates resources in development
+ * - Uses `showInProduction` prop to override if needed
+ *
+ * **Integration:**
+ * - Automatically registers devtools middleware on mount
+ * - Cleans up middleware on unmount
+ * - No configuration required for basic usage
+ *
+ * @param props - Configuration props for the devtools panel
+ * @param props.position - Panel position: 'left' | 'right' | 'top' | 'bottom' (default: 'right')
+ * @param props.defaultOpen - Whether panel is open initially (default: false)
+ * @param props.maxEvents - Maximum events to store in timeline (default: 200)
+ * @param props.showInProduction - Show panel even in production (default: false)
+ * @param props.store - Custom store instance (default: global store)
+ *
+ * @returns React element in development, `null` in production (unless `showInProduction` is true)
+ *
+ * @example
+ * Basic usage (global store)
+ * ```tsx
+ * import { ActionGuardDevtools } from '@okyrychenko-dev/react-action-guard-devtools';
+ *
+ * function App() {
+ *   return (
+ *     <div>
+ *       <YourApp />
+ *       <ActionGuardDevtools />
+ *     </div>
+ *   );
+ * }
+ * ```
+ *
+ * @example
+ * With custom configuration
+ * ```tsx
+ * <ActionGuardDevtools
+ *   position="bottom"
+ *   defaultOpen={true}
+ *   maxEvents={500}
+ * />
+ * ```
+ *
+ * @example
+ * With custom store instance (isolated state)
+ * ```tsx
+ * import { UIBlockingProvider } from '@okyrychenko-dev/react-action-guard';
+ * import { ActionGuardDevtools } from '@okyrychenko-dev/react-action-guard-devtools';
+ *
+ * function IsolatedApp() {
+ *   return (
+ *     <UIBlockingProvider>
+ *       {({ store }) => (
+ *         <>
+ *           <YourApp />
+ *           <ActionGuardDevtools store={store} />
+ *         </>
+ *       )}
+ *     </UIBlockingProvider>
+ *   );
+ * }
+ * ```
+ *
+ * @example
+ * Keyboard shortcuts
+ * ```
+ * Esc        - Close devtools panel
+ * Ctrl/⌘ + P - Toggle pause/resume event capture
+ * Ctrl/⌘ + K - Clear all events
+ * ```
+ *
+ * @see {@link https://github.com/okyrychenko-dev/react-action-guard-devtools | DevTools README}
+ * @see {@link createDevtoolsMiddleware} for manual middleware registration
+ *
+ * @public
+ * @since 0.6.0
  */
 function ActionGuardDevtools(props: ActionGuardDevtoolsProps): ReactElement | null {
   const { showInProduction = false, ...others } = props;

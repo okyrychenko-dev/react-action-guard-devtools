@@ -4,7 +4,55 @@ import type { Middleware, MiddlewareContext } from "@okyrychenko-dev/react-actio
 export const DEVTOOLS_MIDDLEWARE_NAME = "action-guard-devtools";
 
 /**
- * Creates the devtools middleware that records events
+ * Creates the devtools middleware that captures and records UI blocking events.
+ *
+ * This middleware intercepts all blocking events (add, remove, timeout, clear) and
+ * forwards them to the devtools store for visualization in the ActionGuardDevtools panel.
+ *
+ * The middleware calculates the duration of each blocker by tracking when it was added
+ * and when it was removed/timed out, providing insights into how long UI was blocked.
+ *
+ * **Note:** This middleware is automatically registered when you use the `ActionGuardDevtools`
+ * component. You typically don't need to call this function directly unless you're manually
+ * managing middleware registration.
+ *
+ * @returns Middleware function that can be registered with `configureMiddleware` or `registerMiddleware`
+ *
+ * @example
+ * Manual middleware registration (advanced usage)
+ * ```tsx
+ * import { uiBlockingStoreApi } from '@okyrychenko-dev/react-action-guard';
+ * import { createDevtoolsMiddleware, DEVTOOLS_MIDDLEWARE_NAME } from '@okyrychenko-dev/react-action-guard-devtools';
+ *
+ * // Register manually
+ * const middleware = createDevtoolsMiddleware();
+ * uiBlockingStoreApi.getState().registerMiddleware(DEVTOOLS_MIDDLEWARE_NAME, middleware);
+ *
+ * // Cleanup
+ * uiBlockingStoreApi.getState().unregisterMiddleware(DEVTOOLS_MIDDLEWARE_NAME);
+ * ```
+ *
+ * @example
+ * Automatic registration (recommended)
+ * ```tsx
+ * import { ActionGuardDevtools } from '@okyrychenko-dev/react-action-guard-devtools';
+ *
+ * // Middleware registered automatically when component mounts
+ * function App() {
+ *   return (
+ *     <>
+ *       <YourApp />
+ *       <ActionGuardDevtools />
+ *     </>
+ *   );
+ * }
+ * ```
+ *
+ * @see {@link ActionGuardDevtools} for automatic middleware registration
+ * @see {@link https://github.com/okyrychenko-dev/react-action-guard#middleware | Middleware documentation}
+ *
+ * @public
+ * @since 0.6.0
  */
 export function createDevtoolsMiddleware(): Middleware {
   // Track add timestamps for duration calculation
