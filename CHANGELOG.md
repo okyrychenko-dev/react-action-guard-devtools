@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.3] - 2024-12-28
+
+### Documentation
+
+- 📚 **Comprehensive JSDoc documentation** for ActionGuardDevtools component
+  - Detailed component description with all features (timeline, filtering, keyboard shortcuts)
+  - Props documentation with defaults (position, defaultOpen, maxEvents, showInProduction, store)
+  - Performance notes (production behavior, automatic cleanup)
+  - 5 usage examples: basic setup, custom position, isolated stores, production override, keyboard shortcuts
+- 📝 **devtoolsMiddleware documentation** with integration examples
+- 📖 **README improvements** with quick start guide and production safety notes
+
 ## [0.1.2] - 2024-12-24
 
 ### Changed
