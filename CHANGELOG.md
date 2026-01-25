@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-01-25
+
+### Breaking Changes
+
+- ⚠️ **Updated minimum peer dependency versions**:
+  - React: `^18.0.0 || ^19.0.0` (removed React 17 support)
+- ⬆️ **Updated peer dependency**: `@okyrychenko-dev/react-action-guard` from `^0.6.0` to `^0.7.0`
+
+### Changed
+
+- 🏗️ **Type organization**: Moved `DevtoolsKeyboardAction` and `DevtoolsKeyboardResult` types to `ActionGuardDevtools.types.ts`
+- 🔧 **ESLint configuration**: Added `curly: ["error", "all"]` rule
+- 📦 **Dependencies**: Updated `@okyrychenko-dev/react-zustand-toolkit` to `^0.2.0`
+
 ## [0.1.3] - 2024-12-28
 
 ### Documentation
@@ -86,3 +100,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Supports ESM and CommonJS
 - Source maps included
 - Comprehensive JSDoc documentation
+
+[Unreleased]: https://github.com/okyrychenko-dev/react-action-guard-devtools/compare/v0.2.0...HEAD
+[0.2.0]: https://github.com/okyrychenko-dev/react-action-guard-devtools/compare/v0.1.3...v0.2.0
+[0.1.3]: https://github.com/okyrychenko-dev/react-action-guard-devtools/compare/v0.1.2...v0.1.3
+[0.1.2]: https://github.com/okyrychenko-dev/react-action-guard-devtools/compare/v0.1.1...v0.1.2
+[0.1.1]: https://github.com/okyrychenko-dev/react-action-guard-devtools/compare/v0.1.0...v0.1.1
+[0.1.0]: https://github.com/okyrychenko-dev/react-action-guard-devtools/releases/tag/v0.1.0

@@ -26,3 +26,10 @@ export interface ActionGuardDevtoolsProps {
    */
   store?: UIBlockingStoreApi;
 }
+
+export type DevtoolsKeyboardAction = "close" | "togglePause" | "clearEvents";
+
+export interface DevtoolsKeyboardResult {
+  action: DevtoolsKeyboardAction;
+  preventDefault: boolean;
+}

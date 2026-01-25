@@ -1,9 +1,4 @@
-export type DevtoolsKeyboardAction = "close" | "togglePause" | "clearEvents";
-
-export interface DevtoolsKeyboardResult {
-  action: DevtoolsKeyboardAction;
-  preventDefault: boolean;
-}
+import { DevtoolsKeyboardResult } from "./ActionGuardDevtools.types";
 
 function isTypingTarget(target: EventTarget | null): boolean {
   return target instanceof HTMLInputElement || target instanceof HTMLTextAreaElement;
