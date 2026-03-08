@@ -93,11 +93,10 @@ function ActionGuardDevtoolsInternal(
  *
  * **Key Features:**
  * - Real-time visualization of active blockers
- * - Timeline of all blocking events (add, remove, timeout)
+ * - Timeline of blocking events (add, update, remove, timeout, clear, clear_scope)
  * - Filter by action type, scope, or search term
  * - Pause/resume event capture
- * - Keyboard shortcuts (Esc to close, P to pause, C to clear)
- * - Draggable and resizable panel
+ * - Keyboard shortcuts (Esc to close, Space to pause, C to clear)
  * - Works with both global store and custom store instances
  *
  * **Performance:**
@@ -111,11 +110,11 @@ function ActionGuardDevtoolsInternal(
  * - No configuration required for basic usage
  *
  * @param props - Configuration props for the devtools panel
- * @param props.position - Panel position: 'left' | 'right' | 'top' | 'bottom' (default: 'right')
+ * @param props.position - Panel position: 'left' | 'right' (default: 'right')
  * @param props.defaultOpen - Whether panel is open initially (default: false)
  * @param props.maxEvents - Maximum events to store in timeline (default: 200)
  * @param props.showInProduction - Show panel even in production (default: false)
- * @param props.store - Custom store instance (default: global store)
+ * @param props.store - Custom blocking store instance to observe (default: global store)
  *
  * @returns React element in development, `null` in production (unless `showInProduction` is true)
  *
@@ -145,7 +144,7 @@ function ActionGuardDevtoolsInternal(
  * ```
  *
  * @example
- * With custom store instance (isolated state)
+ * With custom store instance
  * ```tsx
  * import { UIBlockingProvider } from '@okyrychenko-dev/react-action-guard';
  * import { ActionGuardDevtools } from '@okyrychenko-dev/react-action-guard-devtools';
@@ -164,12 +163,15 @@ function ActionGuardDevtoolsInternal(
  * }
  * ```
  *
+ * Note: the `store` prop switches the observed blocking store, but devtools UI state and
+ * event history remain shared within the devtools package.
+ *
  * @example
  * Keyboard shortcuts
  * ```
  * Esc        - Close devtools panel
- * Ctrl/⌘ + P - Toggle pause/resume event capture
- * Ctrl/⌘ + K - Clear all events
+ * Space      - Toggle pause/resume event capture
+ * C          - Clear all events
  * ```
  *
  * @see {@link https://github.com/okyrychenko-dev/react-action-guard-devtools | DevTools README}

@@ -101,6 +101,8 @@ export function createDevtoolsMiddleware(): Middleware {
       timestamp: context.timestamp,
       prevState: context.prevState,
       duration,
+      scope: context.scope,
+      count: context.count,
     });
   };
 }

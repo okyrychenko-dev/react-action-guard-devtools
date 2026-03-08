@@ -1,4 +1,4 @@
-import { fireEvent, screen } from "@testing-library/react";
+import { act, fireEvent, screen } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { DEFAULT_FILTER, DEFAULT_MAX_EVENTS, DEFAULT_TAB, devtoolsStoreApi } from "../../../store";
 import { renderWithProviders } from "../../../test/utils";
@@ -96,12 +96,14 @@ describe("Timeline", () => {
     expect(devtoolsStoreApi.getState().selectedEventId).toBe("event-1");
 
     // Remove the selected event from the store (simulating circular buffer eviction)
-    devtoolsStoreApi.setState({
-      events: sampleEvents.filter((e) => e.id !== "event-1"),
-    });
+    act(() => {
+      devtoolsStoreApi.setState({
+        events: sampleEvents.filter((e) => e.id !== "event-1"),
+      });
 
-    // Re-render to trigger the effect
-    rerender(<Timeline />);
+      // Re-render to trigger the effect
+      rerender(<Timeline />);
+    });
 
     // Selection should be cleared
     expect(devtoolsStoreApi.getState().selectedEventId).toBeNull();

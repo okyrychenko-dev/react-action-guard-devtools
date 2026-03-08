@@ -26,6 +26,10 @@ export interface DevtoolsEvent {
   };
   /** Duration in ms (calculated for remove events) */
   duration?: number;
+  /** Scope attached directly to middleware event (for clear_scope, etc.) */
+  scope?: string;
+  /** Number of affected blockers for bulk actions */
+  count?: number;
   /** Source of the blocking action */
   source?: string;
 }

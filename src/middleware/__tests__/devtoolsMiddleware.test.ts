@@ -158,6 +158,7 @@ describe("devtoolsMiddleware", () => {
     expect(store.events).toHaveLength(1);
     expect(store.events[0].action).toBe("clear");
     expect(store.events[0].blockerId).toBe("*");
+    expect(store.events[0].count).toBe(5);
   });
 
   it("should record clear_scope events with scope and count", () => {
@@ -176,5 +177,7 @@ describe("devtoolsMiddleware", () => {
     expect(store.events).toHaveLength(1);
     expect(store.events[0].action).toBe("clear_scope");
     expect(store.events[0].blockerId).toBe("*");
+    expect(store.events[0].scope).toBe("checkout");
+    expect(store.events[0].count).toBe(3);
   });
 });

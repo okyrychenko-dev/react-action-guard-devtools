@@ -31,8 +31,9 @@ pnpm add @okyrychenko-dev/react-action-guard-devtools
 
 This package requires the following peer dependencies:
 
-- [@okyrychenko-dev/react-action-guard](https://github.com/okyrychenko-dev/react-action-guard) ^0.7.0
+- [@okyrychenko-dev/react-action-guard](https://github.com/okyrychenko-dev/react-action-guard) ^1.0.1
 - [React](https://react.dev/) ^18.0.0 || ^19.0.0
+- [Zustand](https://zustand-demo.pmnd.rs/) ^5.0.0
 
 ## Quick Start
 
@@ -67,7 +68,7 @@ The main devtools component that renders the toggle button and panel.
 | `defaultOpen`      | `boolean`            | `false`     | Whether the panel is open by default                  |
 | `maxEvents`        | `number`             | `200`       | Maximum number of events to store in history          |
 | `showInProduction` | `boolean`            | `false`     | Whether to show devtools in production                |
-| `store`            | `UIBlockingStoreApi` | `undefined` | Custom store instance from UIBlockingProvider context |
+| `store`            | `UIBlockingStoreApi` | `undefined` | Custom blocking store to observe instead of the global store |
 
 #### Position Options
 
@@ -94,7 +95,7 @@ The main devtools component that renders the toggle button and panel.
 <ActionGuardDevtools showInProduction={true} />
 ```
 
-**With UIBlockingProvider (Isolated Store):**
+**With UIBlockingProvider:**
 
 ```jsx
 import { UIBlockingProvider, useUIBlockingContext } from "@okyrychenko-dev/react-action-guard";
@@ -114,6 +115,9 @@ function App() {
   );
 }
 ```
+
+`store` changes which blocking store is observed and where middleware is registered.
+Devtools panel state and event history remain shared inside the devtools package.
 
 ## Advanced Usage
 
@@ -199,10 +203,10 @@ The timeline shows all blocking events in chronological order:
   - 🔴 Red - "remove" events (blocker deactivated)
   - 🔵 Blue - "update" events (blocker configuration changed)
   - 🟠 Orange - "timeout" events (blocker auto-removed due to timeout)
-  - 🟠 Orange - "cancel" events (blocker cancelled)
+  - 🟣 Indigo - "clear" / "clear_scope" events (bulk blocker removal)
 - **Duration display**: Shows how long blockers were active
 - **Expandable details**: Click any event to see full configuration
-- **Scope indicators**: Visual tags showing which scopes are affected
+- **Scope indicators**: Visual tags showing which scopes are affected, including `clear_scope`
 
 ### Active Blockers View
 
@@ -217,6 +221,7 @@ See all currently active blockers with:
 Filter events by:
 
 - **Search**: Search by blocker ID, reason, or scope
+- **Scope**: Scope-based filtering also matches bulk `clear_scope` events
 
 For action/scope filtering, use `useDevtoolsStore` and `setFilter` in your own UI.
 

@@ -59,6 +59,20 @@ function EventDetailsContent(props: EventDetailsContentProps): ReactElement {
         </div>
       )}
 
+      {!event.config?.scope && event.scope !== undefined && (
+        <div className={styles.section}>
+          <div className={styles.label}>Scope</div>
+          <div className={styles.value}>{formatScope(event.scope)}</div>
+        </div>
+      )}
+
+      {event.count !== undefined && (
+        <div className={styles.section}>
+          <div className={styles.label}>Affected Count</div>
+          <div className={styles.value}>{event.count}</div>
+        </div>
+      )}
+
       {event.prevState && (
         <div className={styles.section}>
           <div className={styles.label}>Previous State</div>

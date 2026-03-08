@@ -391,5 +391,91 @@ describe("devtoolsStore", () => {
       expect(filtered).toHaveLength(1);
       expect(filtered[0].id).toBe("1");
     });
+
+    it("should filter clear_scope events by top-level scope", () => {
+      const events: Array<DevtoolsEvent> = [
+        {
+          id: "1",
+          action: "clear_scope",
+          blockerId: "*",
+          timestamp: 1,
+          scope: "checkout",
+          count: 3,
+        },
+      ];
+
+      const state: DevtoolsStore = {
+        events,
+        maxEvents: 200,
+        isOpen: false,
+        isMinimized: false,
+        activeTab: "timeline",
+        filter: {
+          actions: ["add", "update", "remove", "timeout", "clear", "clear_scope"],
+          scopes: ["checkout"],
+          search: "",
+        },
+        selectedEventId: null,
+        isPaused: false,
+        addEvent: noopAddEvent,
+        clearEvents: noop,
+        toggleOpen: noop,
+        setOpen: noopSetOpen,
+        toggleMinimized: noop,
+        setActiveTab: noopSetActiveTab,
+        setFilter: noopSetFilter,
+        resetFilter: noop,
+        selectEvent: noopSelectEvent,
+        togglePause: noop,
+        setMaxEvents: noopSetMaxEvents,
+      };
+
+      const filtered = selectFilteredEvents(state);
+      expect(filtered).toHaveLength(1);
+      expect(filtered[0].scope).toBe("checkout");
+    });
+
+    it("should match search query against top-level scope", () => {
+      const events: Array<DevtoolsEvent> = [
+        {
+          id: "1",
+          action: "clear_scope",
+          blockerId: "*",
+          timestamp: 1,
+          scope: "checkout",
+          count: 2,
+        },
+      ];
+
+      const state: DevtoolsStore = {
+        events,
+        maxEvents: 200,
+        isOpen: false,
+        isMinimized: false,
+        activeTab: "timeline",
+        filter: {
+          actions: ["add", "update", "remove", "timeout", "clear", "clear_scope"],
+          scopes: [],
+          search: "check",
+        },
+        selectedEventId: null,
+        isPaused: false,
+        addEvent: noopAddEvent,
+        clearEvents: noop,
+        toggleOpen: noop,
+        setOpen: noopSetOpen,
+        toggleMinimized: noop,
+        setActiveTab: noopSetActiveTab,
+        setFilter: noopSetFilter,
+        resetFilter: noop,
+        selectEvent: noopSelectEvent,
+        togglePause: noop,
+        setMaxEvents: noopSetMaxEvents,
+      };
+
+      const filtered = selectFilteredEvents(state);
+      expect(filtered).toHaveLength(1);
+      expect(filtered[0].scope).toBe("checkout");
+    });
   });
 });

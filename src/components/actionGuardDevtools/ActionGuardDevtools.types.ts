@@ -20,9 +20,9 @@ export interface ActionGuardDevtoolsProps {
   /** Whether to show in production (default: false) */
   showInProduction?: boolean;
   /**
-   * Custom store instance from UIBlockingProvider.
-   * Use this when you have multiple isolated stores via UIBlockingProvider.
-   * If not provided, the global store is used.
+   * Custom blocking store instance to observe instead of the global store.
+   * This only changes the source of active blockers and middleware registration.
+   * Devtools UI state and event history remain shared within the devtools package.
    */
   store?: UIBlockingStoreApi;
 }

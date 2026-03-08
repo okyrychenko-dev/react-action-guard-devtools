@@ -14,6 +14,15 @@ function normalizeScopes(scope: ScopeValue): ReadonlyArray<string> {
   return scope;
 }
 
+function getEventScopes(event: DevtoolsEvent): ReadonlyArray<string> {
+  const configScopes = normalizeScopes(event.config?.scope);
+  if (configScopes.length > 0) {
+    return configScopes;
+  }
+
+  return normalizeScopes(event.scope);
+}
+
 function matchesActionFilter(
   event: DevtoolsEvent,
   actions: DevtoolsStore["filter"]["actions"]
@@ -26,7 +35,7 @@ function matchesScopeFilter(event: DevtoolsEvent, scopes: Array<string>): boolea
     return true;
   }
 
-  const eventScopes = normalizeScopes(event.config?.scope);
+  const eventScopes = getEventScopes(event);
   if (eventScopes.length === 0) {
     return false;
   }
@@ -42,7 +51,7 @@ function matchesSearchQuery(event: DevtoolsEvent, search: string): boolean {
   const searchLower = search.toLowerCase();
   const matchesId = event.blockerId.toLowerCase().includes(searchLower);
   const matchesReason = (event.config?.reason ?? "").toLowerCase().includes(searchLower);
-  const matchesScope = normalizeScopes(event.config?.scope).some((scope) =>
+  const matchesScope = getEventScopes(event).some((scope) =>
     scope.toLowerCase().includes(searchLower)
   );
 
@@ -71,7 +80,7 @@ export function selectUniqueScopes(state: DevtoolsStore): Array<string> {
   const scopes = new Set<string>();
 
   state.events.forEach((event) => {
-    normalizeScopes(event.config?.scope).forEach((scope) => scopes.add(scope));
+    getEventScopes(event).forEach((scope) => scopes.add(scope));
   });
 
   return Array.from(scopes).sort();
