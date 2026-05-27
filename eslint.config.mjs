@@ -26,6 +26,7 @@ export default [
     rules: {
       ...reactHooks.configs.recommended.rules,
 
+      "import/no-duplicates": "error",
       "import/order": [
         "error",
         {
@@ -43,7 +44,9 @@ export default [
           alphabetize: {
             order: "asc",
             caseInsensitive: true,
+            orderImportKind: "asc",
           },
+          sortTypesGroup: true,
         },
       ],
       "sort-imports": [
@@ -103,7 +106,6 @@ export default [
       "prefer-const": "error",
       "no-var": "error",
       eqeqeq: ["error", "always"],
-      curly: ["error", "all"],
     },
   },
   {
@@ -131,4 +133,9 @@ export default [
     },
   },
   prettier,
+  {
+    rules: {
+      curly: ["error", "all"],
+    },
+  },
 ];
