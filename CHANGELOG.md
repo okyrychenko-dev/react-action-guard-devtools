@@ -7,6 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.4] - 2026-05-28
+
+### Fixed
+
+- Devtools middleware no longer reports a stale `duration` for blockers removed after a `clear` / `clear_scope`; tracked timestamps are cleared together with the blockers.
+- `defaultOpen` is treated as an initial value and no longer resets the panel's open state when other props (e.g. `maxEvents`) change.
+- Keyboard shortcuts are now ignored when focus is in `<select>` or `contentEditable` elements (previously only `<input>` / `<textarea>`).
+- `setMaxEvents` normalizes invalid input (values ≤ 0 clamp to 1, non-finite values fall back to the default).
+
+### Changed
+
+- Consolidated scope/time/duration formatters into a single internal `src/utils` module.
+- Timeline selection is cleared when the selected event is filtered out, not only when it is evicted from the event buffer.
+
+### Removed
+
+- Removed the unused `source` field from the `DevtoolsEvent` type (it was never populated).
+
 ## [0.2.3] - 2026-05-27
 
 ### Changed
