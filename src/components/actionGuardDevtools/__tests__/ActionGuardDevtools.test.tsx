@@ -56,6 +56,21 @@ describe("ActionGuardDevtools", () => {
     expect(screen.queryByTitle("Open Action Guard Devtools")).not.toBeInTheDocument();
   });
 
+  it("should preserve manually changed open state when maxEvents changes", async () => {
+    const { rerender } = renderWithProviders(<ActionGuardDevtools maxEvents={100} />);
+
+    fireEvent.click(screen.getByTitle("Open Action Guard Devtools"));
+
+    await waitFor(() => {
+      expect(screen.getByText("Action Guard")).toBeInTheDocument();
+    });
+
+    rerender(<ActionGuardDevtools maxEvents={300} />);
+
+    expect(screen.getByText("Action Guard")).toBeInTheDocument();
+    expect(devtoolsStoreApi.getState().maxEvents).toBe(300);
+  });
+
   it("should handle keyboard shortcuts", async () => {
     const events: Array<DevtoolsEvent> = [
       {
@@ -94,9 +109,41 @@ describe("ActionGuardDevtools", () => {
     });
     expect(screen.getByTitle("Open Action Guard Devtools")).toBeInTheDocument();
   });
+
+  it("should ignore keyboard shortcuts from content editable elements", async () => {
+    const events: Array<DevtoolsEvent> = [
+      {
+        id: "event-1",
+        action: "add",
+        blockerId: "blocker-1",
+        timestamp: Date.now(),
+      },
+    ];
+    const editableElement = document.createElement("div");
+
+    editableElement.contentEditable = "true";
+    document.body.appendChild(editableElement);
+    devtoolsStoreApi.setState({ events });
+
+    renderWithProviders(<ActionGuardDevtools defaultOpen={true} />);
+
+    await waitFor(() => {
+      expect(screen.getByText("Action Guard")).toBeInTheDocument();
+    });
+
+    fireEvent.keyDown(editableElement, { key: "c" });
+
+    expect(devtoolsStoreApi.getState().events).toHaveLength(1);
+
+    editableElement.remove();
+  });
 });
 
 describe("ActionGuardDevtoolsContent", () => {
+  beforeEach(() => {
+    resetDevtoolsStore();
+  });
+
   it("should render toggle button when panel is closed", () => {
     renderWithProviders(<ActionGuardDevtoolsContent position="right" />);
 

@@ -201,41 +201,42 @@ export const CustomMaxEvents: Story = {
 };
 
 /**
+ * Demo app that automatically cycles blockers every 2 seconds
+ */
+function AutoCycleDemo(): ReactElement {
+  const [cycle, setCycle] = useState(0);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCycle((c) => (c + 1) % 3);
+    }, 2000);
+
+    return () => {
+      clearInterval(interval);
+    };
+  }, []);
+
+  useBlocker("auto-cycle-1", { scope: "demo", reason: "First blocker" }, cycle === 0);
+  useBlocker("auto-cycle-2", { scope: "demo", reason: "Second blocker" }, cycle === 1);
+  useBlocker("auto-cycle-3", { scope: "demo", reason: "Third blocker" }, cycle === 2);
+
+  return (
+    <div className={styles.demoApp}>
+      <h1>Auto Cycle Demo</h1>
+      <p>Blockers are automatically cycling every 2 seconds.</p>
+      <p>Current cycle: {cycle + 1}</p>
+    </div>
+  );
+}
+
+/**
  * Example with automatic blocker cycle
  */
 export const AutoCycle: Story = {
-  render: (args: ActionGuardDevtoolsProps) => {
-    function AutoCycleDemo(): ReactElement {
-      const [cycle, setCycle] = useState(0);
-
-      useEffect(() => {
-        const interval = setInterval(() => {
-          setCycle((c) => (c + 1) % 3);
-        }, 2000);
-
-        return () => {
-          clearInterval(interval);
-        };
-      }, []);
-
-      useBlocker("auto-cycle-1", { scope: "demo", reason: "First blocker" }, cycle === 0);
-      useBlocker("auto-cycle-2", { scope: "demo", reason: "Second blocker" }, cycle === 1);
-      useBlocker("auto-cycle-3", { scope: "demo", reason: "Third blocker" }, cycle === 2);
-
-      return (
-        <div className={styles.demoApp}>
-          <h1>Auto Cycle Demo</h1>
-          <p>Blockers are automatically cycling every 2 seconds.</p>
-          <p>Current cycle: {cycle + 1}</p>
-        </div>
-      );
-    }
-
-    return (
-      <>
-        <AutoCycleDemo />
-        <ActionGuardDevtools {...args} defaultOpen={true} />
-      </>
-    );
-  },
+  render: (args: ActionGuardDevtoolsProps) => (
+    <>
+      <AutoCycleDemo />
+      <ActionGuardDevtools {...args} defaultOpen={true} />
+    </>
+  ),
 };

@@ -85,7 +85,3 @@ export function selectUniqueScopes(state: DevtoolsStore): Array<string> {
 
   return Array.from(scopes).sort();
 }
-
-export function selectAllEvents(state: DevtoolsStore): Array<DevtoolsEvent> {
-  return state.events;
-}

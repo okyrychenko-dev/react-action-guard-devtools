@@ -1,6 +1,6 @@
-import type { DevtoolsPosition } from "../../types/devtools.types";
 import type { UIBlockingStore } from "@okyrychenko-dev/react-action-guard";
 import type { StoreApi } from "zustand";
+import type { DevtoolsPosition } from "../../types";
 
 /**
  * Store API type for UIBlockingProvider integration

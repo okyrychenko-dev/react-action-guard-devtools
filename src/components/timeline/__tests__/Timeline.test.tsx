@@ -108,6 +108,19 @@ describe("Timeline", () => {
     // Selection should be cleared
     expect(devtoolsStoreApi.getState().selectedEventId).toBeNull();
   });
+
+  it("should clear selection when selected event is filtered out", () => {
+    devtoolsStoreApi.setState({ events: sampleEvents, selectedEventId: "event-1" });
+
+    renderWithProviders(<Timeline />);
+
+    fireEvent.change(screen.getByPlaceholderText("Search by ID or reason..."), {
+      target: { value: "blocker-2" },
+    });
+
+    expect(devtoolsStoreApi.getState().selectedEventId).toBeNull();
+    expect(screen.queryByText("Blocker ID")).not.toBeInTheDocument();
+  });
 });
 
 describe("TimelineContent", () => {

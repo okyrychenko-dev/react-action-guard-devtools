@@ -15,8 +15,15 @@ function ActionGuardDevtoolsInternal(
   props: Omit<ActionGuardDevtoolsProps, "showInProduction">
 ): ReactElement {
   const { position = "right", defaultOpen = false, maxEvents = 200, store: customStore } = props;
+  const initialDefaultOpenRef = useRef(defaultOpen);
 
-  const { setOpen, setMaxEvents, isOpen, togglePause, clearEvents } = useDevtoolsStore();
+  const { setOpen, setMaxEvents, isOpen, togglePause, clearEvents } = useDevtoolsStore((state) => ({
+    setOpen: state.setOpen,
+    setMaxEvents: state.setMaxEvents,
+    isOpen: state.isOpen,
+    togglePause: state.togglePause,
+    clearEvents: state.clearEvents,
+  }));
 
   // Get the store to use (custom or global)
   const targetStore = useMemo(() => customStore ?? uiBlockingStoreApi, [customStore]);
@@ -33,11 +40,15 @@ function ActionGuardDevtoolsInternal(
     };
   }, [targetStore]);
 
-  // Set initial state
+  // Set initial open state once. defaultOpen is an initial value, not a controlled prop.
   useEffect(() => {
-    setOpen(defaultOpen);
+    setOpen(initialDefaultOpenRef.current);
+  }, [setOpen]);
+
+  // Keep runtime maxEvents changes scoped to the event buffer.
+  useEffect(() => {
     setMaxEvents(maxEvents);
-  }, [defaultOpen, maxEvents, setOpen, setMaxEvents]);
+  }, [maxEvents, setMaxEvents]);
 
   // Stable ref for keyboard handler to avoid re-registering event listener
   const stateRef = useRef({ isOpen, setOpen, togglePause, clearEvents });
@@ -137,7 +148,7 @@ function ActionGuardDevtoolsInternal(
  * With custom configuration
  * ```tsx
  * <ActionGuardDevtools
- *   position="bottom"
+ *   position="right"
  *   defaultOpen={true}
  *   maxEvents={500}
  * />
@@ -146,18 +157,19 @@ function ActionGuardDevtoolsInternal(
  * @example
  * With custom store instance
  * ```tsx
- * import { UIBlockingProvider } from '@okyrychenko-dev/react-action-guard';
+ * import { UIBlockingProvider, useUIBlockingContext } from '@okyrychenko-dev/react-action-guard';
  * import { ActionGuardDevtools } from '@okyrychenko-dev/react-action-guard-devtools';
+ *
+ * function DevtoolsWithProvider() {
+ *   const store = useUIBlockingContext();
+ *   return <ActionGuardDevtools store={store} />;
+ * }
  *
  * function IsolatedApp() {
  *   return (
  *     <UIBlockingProvider>
- *       {({ store }) => (
- *         <>
- *           <YourApp />
- *           <ActionGuardDevtools store={store} />
- *         </>
- *       )}
+ *       <YourApp />
+ *       <DevtoolsWithProvider />
  *     </UIBlockingProvider>
  *   );
  * }
@@ -178,7 +190,6 @@ function ActionGuardDevtoolsInternal(
  * @see {@link createDevtoolsMiddleware} for manual middleware registration
  *
  * @public
- * @since 0.6.0
  */
 function ActionGuardDevtools(props: ActionGuardDevtoolsProps): ReactElement | null {
   const { showInProduction = false, ...others } = props;

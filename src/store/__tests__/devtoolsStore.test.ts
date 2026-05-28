@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it } from "vitest";
+import { DEFAULT_MAX_EVENTS } from "../devtoolsStore.constants";
 import { selectFilteredEvents } from "../devtoolsStore.selectors";
 import { devtoolsStoreApi } from "../devtoolsStore.store";
 import type { DevtoolsEvent, DevtoolsStore } from "../../types";
@@ -95,6 +96,19 @@ describe("devtoolsStore", () => {
       // Should keep the most recent events (prepended)
       expect(state.events[0].blockerId).toBe("blocker-4");
       expect(state.events[2].blockerId).toBe("blocker-2");
+    });
+
+    it("should normalize invalid maxEvents values", () => {
+      const store = devtoolsStoreApi.getState();
+
+      store.setMaxEvents(0);
+      expect(devtoolsStoreApi.getState().maxEvents).toBe(1);
+
+      store.setMaxEvents(-10);
+      expect(devtoolsStoreApi.getState().maxEvents).toBe(1);
+
+      store.setMaxEvents(Number.POSITIVE_INFINITY);
+      expect(devtoolsStoreApi.getState().maxEvents).toBe(DEFAULT_MAX_EVENTS);
     });
 
     it("should not add events when paused", () => {

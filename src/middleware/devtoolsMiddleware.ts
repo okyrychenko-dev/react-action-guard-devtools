@@ -3,6 +3,11 @@ import type { Middleware, MiddlewareContext } from "@okyrychenko-dev/react-actio
 
 export const DEVTOOLS_MIDDLEWARE_NAME = "action-guard-devtools";
 
+interface TrackedBlocker {
+  timestamp: number;
+  scope?: string | ReadonlyArray<string>;
+}
+
 /**
  * Creates the devtools middleware that captures and records UI blocking events.
  *
@@ -52,11 +57,10 @@ export const DEVTOOLS_MIDDLEWARE_NAME = "action-guard-devtools";
  * @see {@link https://github.com/okyrychenko-dev/react-action-guard#middleware | Middleware documentation}
  *
  * @public
- * @since 0.6.0
  */
 export function createDevtoolsMiddleware(): Middleware {
   // Track add timestamps for duration calculation
-  const addTimestamps = new Map<string, number>();
+  const activeBlockers = new Map<string, TrackedBlocker>();
   const terminalActions = new Set<MiddlewareContext["action"]>([
     "remove",
     "timeout",
@@ -73,13 +77,41 @@ export function createDevtoolsMiddleware(): Middleware {
       return undefined;
     }
 
-    const addTime = addTimestamps.get(blockerId);
-    if (addTime === undefined) {
+    const trackedBlocker = activeBlockers.get(blockerId);
+    if (trackedBlocker === undefined) {
       return undefined;
     }
 
-    addTimestamps.delete(blockerId);
-    return timestamp - addTime;
+    activeBlockers.delete(blockerId);
+    return timestamp - trackedBlocker.timestamp;
+  };
+
+  const clearScopedBlockers = (scope: string): void => {
+    for (const [blockerId, trackedBlocker] of activeBlockers.entries()) {
+      if (trackedBlocker.scope === scope) {
+        activeBlockers.delete(blockerId);
+        continue;
+      }
+
+      if (Array.isArray(trackedBlocker.scope) && trackedBlocker.scope.includes(scope)) {
+        activeBlockers.delete(blockerId);
+      }
+    }
+  };
+
+  const clearTrackedBlockers = (context: MiddlewareContext): void => {
+    switch (context.action) {
+      case "clear":
+        activeBlockers.clear();
+        break;
+      case "clear_scope":
+        if (context.scope !== undefined) {
+          clearScopedBlockers(context.scope);
+        }
+        break;
+      default:
+        break;
+    }
   };
 
   return (context: MiddlewareContext): void => {
@@ -87,11 +119,15 @@ export function createDevtoolsMiddleware(): Middleware {
 
     // Track when blockers are added
     if (context.action === "add") {
-      addTimestamps.set(context.blockerId, context.timestamp);
+      activeBlockers.set(context.blockerId, {
+        timestamp: context.timestamp,
+        scope: context.config?.scope,
+      });
     }
 
     // Calculate duration for terminal events
     const duration = getDuration(context.action, context.blockerId, context.timestamp);
+    clearTrackedBlockers(context);
 
     // Record the event
     addEvent({

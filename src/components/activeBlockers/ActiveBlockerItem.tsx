@@ -1,8 +1,8 @@
 import { StoredBlocker } from "@okyrychenko-dev/react-action-guard";
 import { ReactElement } from "react";
+import { formatRelativeTime, formatScope } from "../../utils";
 import { Badge } from "../shared";
 import styles from "./ActiveBlockers.module.css";
-import { formatScope, formatTimestamp } from "./ActiveBlockers.utils";
 
 interface BlockerItemProps {
   id: string;
@@ -22,7 +22,7 @@ function ActiveBlockerItem(props: BlockerItemProps): ReactElement {
         <span>Scope: {formatScope(blocker.scope)}</span>
         <span>Priority: {blocker.priority}</span>
         <span>Reason: {blocker.reason}</span>
-        <span>Started: {formatTimestamp(blocker.timestamp)}</span>
+        <span>Started: {formatRelativeTime(blocker.timestamp)}</span>
       </div>
     </div>
   );

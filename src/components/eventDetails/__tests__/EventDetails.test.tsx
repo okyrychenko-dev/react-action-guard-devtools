@@ -22,7 +22,6 @@ const baseEvent: DevtoolsEvent = {
     reason: "Pending",
     priority: 50,
   },
-  source: "test-source",
 };
 
 describe("EventDetailsHeader", () => {
@@ -62,8 +61,6 @@ describe("EventDetailsContent", () => {
       screen.getByText((_, node) => node?.textContent === "reason: Pending")
     ).toBeInTheDocument();
     expect(screen.getByText((_, node) => node?.textContent === "priority: 50")).toBeInTheDocument();
-    expect(screen.getByText("Source")).toBeInTheDocument();
-    expect(screen.getByText("test-source")).toBeInTheDocument();
 
     nowSpy.mockRestore();
   });

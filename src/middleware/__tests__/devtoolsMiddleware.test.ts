@@ -180,4 +180,90 @@ describe("devtoolsMiddleware", () => {
     expect(store.events[0].scope).toBe("checkout");
     expect(store.events[0].count).toBe(3);
   });
+
+  it("should clear tracked blocker timestamps after clear", () => {
+    const middleware = createDevtoolsMiddleware();
+    const timestamp = Date.now();
+
+    void middleware({
+      action: "add",
+      blockerId: "blocker-1",
+      timestamp,
+      config: { scope: "checkout" },
+      prevState: undefined,
+    });
+
+    void middleware({
+      action: "clear",
+      blockerId: "*",
+      timestamp: timestamp + 100,
+      count: 1,
+    });
+
+    void middleware({
+      action: "remove",
+      blockerId: "blocker-1",
+      timestamp: timestamp + 200,
+      config: { scope: "checkout" },
+      prevState: undefined,
+    });
+
+    const store = devtoolsStoreApi.getState();
+    expect(store.events[0].action).toBe("remove");
+    expect(store.events[0].duration).toBeUndefined();
+  });
+
+  it("should clear tracked blocker timestamps after clear_scope", () => {
+    const middleware = createDevtoolsMiddleware();
+    const timestamp = Date.now();
+
+    void middleware({
+      action: "add",
+      blockerId: "checkout-blocker",
+      timestamp,
+      config: { scope: "checkout" },
+      prevState: undefined,
+    });
+
+    void middleware({
+      action: "add",
+      blockerId: "profile-blocker",
+      timestamp,
+      config: { scope: "profile" },
+      prevState: undefined,
+    });
+
+    void middleware({
+      action: "clear_scope",
+      blockerId: "*",
+      timestamp: timestamp + 100,
+      scope: "checkout",
+      count: 1,
+    });
+
+    void middleware({
+      action: "remove",
+      blockerId: "checkout-blocker",
+      timestamp: timestamp + 200,
+      config: { scope: "checkout" },
+      prevState: undefined,
+    });
+
+    void middleware({
+      action: "remove",
+      blockerId: "profile-blocker",
+      timestamp: timestamp + 300,
+      config: { scope: "profile" },
+      prevState: undefined,
+    });
+
+    const store = devtoolsStoreApi.getState();
+    const checkoutRemoveEvent = store.events.find(
+      (event) => event.blockerId === "checkout-blocker"
+    );
+    const profileRemoveEvent = store.events.find((event) => event.blockerId === "profile-blocker");
+
+    expect(checkoutRemoveEvent?.duration).toBeUndefined();
+    expect(profileRemoveEvent?.duration).toBe(300);
+  });
 });

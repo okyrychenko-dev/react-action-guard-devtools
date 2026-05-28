@@ -1,8 +1,8 @@
 import { ReactElement } from "react";
 import { DevtoolsPanel } from "../devtoolsPanel";
 import { ToggleButton } from "../toggleButton";
-import type { UIBlockingStoreApi } from "./ActionGuardDevtools.types";
 import type { DevtoolsPosition } from "../../types";
+import type { UIBlockingStoreApi } from "./ActionGuardDevtools.types";
 
 interface ActionGuardDevtoolsContentProps {
   position: DevtoolsPosition;

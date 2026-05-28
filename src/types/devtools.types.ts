@@ -30,8 +30,6 @@ export interface DevtoolsEvent {
   scope?: string;
   /** Number of affected blockers for bulk actions */
   count?: number;
-  /** Source of the blocking action */
-  source?: string;
 }
 
 /**

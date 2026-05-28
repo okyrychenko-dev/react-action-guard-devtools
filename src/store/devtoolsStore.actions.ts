@@ -1,6 +1,6 @@
 import { DEFAULT_MAX_EVENTS, DEFAULT_TAB, createDefaultFilter } from "./devtoolsStore.constants";
-import type { DevtoolsEvent, DevtoolsStore } from "../types/devtools.types";
 import type { StateCreator } from "zustand";
+import type { DevtoolsEvent, DevtoolsStore } from "../types";
 
 /**
  * Devtools Store Slice
@@ -25,6 +25,14 @@ export const createDevtoolsActions: StateCreator<DevtoolsStore, [], [], Devtools
     }
 
     return events.slice(0, maxEvents);
+  };
+
+  const normalizeMaxEvents = (maxEvents: number): number => {
+    if (!Number.isFinite(maxEvents)) {
+      return DEFAULT_MAX_EVENTS;
+    }
+
+    return Math.max(1, Math.floor(maxEvents));
   };
 
   return {
@@ -140,9 +148,11 @@ export const createDevtoolsActions: StateCreator<DevtoolsStore, [], [], Devtools
      * @param max - Maximum number of events to keep
      */
     setMaxEvents: (max): void => {
+      const maxEvents = normalizeMaxEvents(max);
+
       set((state) => ({
-        maxEvents: max,
-        events: trimEvents(state.events, max),
+        maxEvents,
+        events: trimEvents(state.events, maxEvents),
       }));
     },
   };

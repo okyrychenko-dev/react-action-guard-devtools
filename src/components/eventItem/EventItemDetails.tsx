@@ -1,6 +1,6 @@
 import { ReactElement } from "react";
+import { formatDuration, formatScope } from "../../utils";
 import styles from "./EventItem.module.css";
-import { formatDuration, formatScope } from "./EventItem.utils";
 import type { DevtoolsEvent } from "../../types";
 
 interface EventItemDetailsProps {

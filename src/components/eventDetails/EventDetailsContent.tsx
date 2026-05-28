@@ -1,7 +1,6 @@
 import { ReactElement } from "react";
-import { formatDuration, formatScope } from "../eventItem";
+import { formatDuration, formatFullTimestamp, formatRelativeTime, formatScope } from "../../utils";
 import styles from "./EventDetails.module.css";
-import { formatFullTimestamp, formatRelativeTime } from "./EventDetails.utils";
 import type { DevtoolsEvent } from "../../types";
 
 interface EventDetailsContentProps {
@@ -96,13 +95,6 @@ function EventDetailsContent(props: EventDetailsContentProps): ReactElement {
               </div>
             )}
           </div>
-        </div>
-      )}
-
-      {event.source && (
-        <div className={styles.section}>
-          <div className={styles.label}>Source</div>
-          <div className={styles.value}>{event.source}</div>
         </div>
       )}
     </div>

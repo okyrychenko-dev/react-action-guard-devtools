@@ -5,8 +5,4 @@ export {
   createDefaultFilter,
 } from "./devtoolsStore.constants";
 export { useDevtoolsStore, devtoolsStoreApi } from "./devtoolsStore.store";
-export {
-  selectFilteredEvents,
-  selectUniqueScopes,
-  selectAllEvents,
-} from "./devtoolsStore.selectors";
+export { selectFilteredEvents, selectUniqueScopes } from "./devtoolsStore.selectors";

@@ -1,6 +1,5 @@
 import { ChangeEvent, ReactElement, useCallback, useEffect } from "react";
-import { useShallow } from "zustand/react/shallow";
-import { selectAllEvents, selectFilteredEvents, useDevtoolsStore } from "../../store";
+import { selectFilteredEvents, useDevtoolsStore } from "../../store";
 import { EventDetails } from "../eventDetails";
 import { isFilterActive } from "./Timeline.utils";
 import TimelineContent from "./TimelineContent";
@@ -9,24 +8,21 @@ import TimelineToolbar from "./TimelineToolbar";
 
 function Timeline(): ReactElement {
   const events = useDevtoolsStore(selectFilteredEvents);
-  const allEvents = useDevtoolsStore(selectAllEvents);
-  const { selectedEventId, selectEvent, filter, setFilter } = useDevtoolsStore(
-    useShallow((state) => ({
-      selectedEventId: state.selectedEventId,
-      selectEvent: state.selectEvent,
-      filter: state.filter,
-      setFilter: state.setFilter,
-    }))
-  );
+  const { selectedEventId, selectEvent, filter, setFilter } = useDevtoolsStore((state) => ({
+    selectedEventId: state.selectedEventId,
+    selectEvent: state.selectEvent,
+    filter: state.filter,
+    setFilter: state.setFilter,
+  }));
 
   const selectedEvent = selectedEventId ? events.find((e) => e.id === selectedEventId) : null;
 
-  // Clear selection if selected event was removed from circular buffer
+  // Clear selection if selected event was removed or filtered out.
   useEffect(() => {
-    if (selectedEventId && !allEvents.some((event) => event.id === selectedEventId)) {
+    if (selectedEventId && !events.some((event) => event.id === selectedEventId)) {
       selectEvent(null);
     }
-  }, [selectedEventId, allEvents, selectEvent]);
+  }, [selectedEventId, events, selectEvent]);
 
   const handleSearchChange = useCallback(
     (e: ChangeEvent<HTMLInputElement>) => {

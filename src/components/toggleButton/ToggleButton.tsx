@@ -16,7 +16,11 @@ interface ToggleButtonProps {
 function ToggleButton(props: ToggleButtonProps): ReactElement | null {
   const { position, store } = props;
 
-  const { isOpen, toggleOpen, isPaused } = useDevtoolsStore();
+  const { isOpen, toggleOpen, isPaused } = useDevtoolsStore((state) => ({
+    isOpen: state.isOpen,
+    toggleOpen: state.toggleOpen,
+    isPaused: state.isPaused,
+  }));
 
   // Read active blockers count directly from the blocking store
   const targetStore = store ?? uiBlockingStoreApi;

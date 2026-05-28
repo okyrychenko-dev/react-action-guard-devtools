@@ -1,7 +1,7 @@
 import { ReactElement } from "react";
+import { formatTime } from "../../utils";
 import { EventBadge } from "../shared";
 import styles from "./EventItem.module.css";
-import { formatTime } from "./EventItem.utils";
 import type { DevtoolsEvent } from "../../types";
 
 interface EventItemHeaderProps {

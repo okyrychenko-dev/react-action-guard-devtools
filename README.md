@@ -31,7 +31,7 @@ pnpm add @okyrychenko-dev/react-action-guard-devtools
 
 This package requires the following peer dependencies:
 
-- [@okyrychenko-dev/react-action-guard](https://github.com/okyrychenko-dev/react-action-guard) ^1.0.1
+- [@okyrychenko-dev/react-action-guard](https://github.com/okyrychenko-dev/react-action-guard) ^1.0.4
 - [React](https://react.dev/) ^18.0.0 || ^19.0.0
 - [Zustand](https://zustand-demo.pmnd.rs/) ^5.0.0
 
@@ -234,7 +234,7 @@ For action/scope filtering, use `useDevtoolsStore` and `setFilter` in your own U
 
 ### Keyboard Shortcuts
 
-When the panel is open (and focus is not in an input):
+When the panel is open (and focus is not in an input or editable element):
 
 - `Esc` - Close panel
 - `Space` - Pause/Resume recording
