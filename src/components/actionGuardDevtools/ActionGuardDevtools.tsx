@@ -1,7 +1,7 @@
 import { uiBlockingStoreApi } from "@okyrychenko-dev/react-action-guard";
 import { ReactElement, useEffect, useMemo, useRef } from "react";
 import { DEVTOOLS_MIDDLEWARE_NAME, createDevtoolsMiddleware } from "../../middleware";
-import { useDevtoolsStore } from "../../store";
+import { DEFAULT_MAX_EVENTS, useDevtoolsStore } from "../../store";
 import { getDevtoolsKeyboardAction } from "./ActionGuardDevtools.utils";
 import ActionGuardDevtoolsContent from "./ActionGuardDevtoolsContent";
 import type { ActionGuardDevtoolsProps } from "./ActionGuardDevtools.types";
@@ -14,7 +14,12 @@ import "../../styles/theme.css";
 function ActionGuardDevtoolsInternal(
   props: Omit<ActionGuardDevtoolsProps, "showInProduction">
 ): ReactElement {
-  const { position = "right", defaultOpen = false, maxEvents = 200, store: customStore } = props;
+  const {
+    position = "right",
+    defaultOpen = false,
+    maxEvents = DEFAULT_MAX_EVENTS,
+    store: customStore,
+  } = props;
   const initialDefaultOpenRef = useRef(defaultOpen);
 
   const { setOpen, setMaxEvents, isOpen, togglePause, clearEvents } = useDevtoolsStore((state) => ({

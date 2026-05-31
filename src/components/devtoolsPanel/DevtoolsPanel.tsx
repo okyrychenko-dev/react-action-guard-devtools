@@ -26,7 +26,18 @@ function DevtoolsPanel(props: DevtoolsPanelProps): ReactElement | null {
     isPaused,
     togglePause,
     events,
-  } = useDevtoolsStore();
+  } = useDevtoolsStore((state) => ({
+    isOpen: state.isOpen,
+    isMinimized: state.isMinimized,
+    activeTab: state.activeTab,
+    setActiveTab: state.setActiveTab,
+    toggleOpen: state.toggleOpen,
+    toggleMinimized: state.toggleMinimized,
+    clearEvents: state.clearEvents,
+    isPaused: state.isPaused,
+    togglePause: state.togglePause,
+    events: state.events,
+  }));
 
   if (!isOpen) {
     return null;

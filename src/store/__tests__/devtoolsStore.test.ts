@@ -98,6 +98,33 @@ describe("devtoolsStore", () => {
       expect(state.events[2].blockerId).toBe("blocker-2");
     });
 
+    it("should deselect event when addEvent trims it from the buffer", () => {
+      const store = devtoolsStoreApi.getState();
+      store.setMaxEvents(2);
+
+      store.addEvent({
+        action: "add",
+        blockerId: "blocker-1",
+        timestamp: 1,
+      });
+      store.addEvent({
+        action: "add",
+        blockerId: "blocker-2",
+        timestamp: 2,
+      });
+
+      const selectedEventId = devtoolsStoreApi.getState().events[1].id;
+      store.selectEvent(selectedEventId);
+
+      store.addEvent({
+        action: "add",
+        blockerId: "blocker-3",
+        timestamp: 3,
+      });
+
+      expect(devtoolsStoreApi.getState().selectedEventId).toBe(null);
+    });
+
     it("should normalize invalid maxEvents values", () => {
       const store = devtoolsStoreApi.getState();
 
@@ -109,6 +136,28 @@ describe("devtoolsStore", () => {
 
       store.setMaxEvents(Number.POSITIVE_INFINITY);
       expect(devtoolsStoreApi.getState().maxEvents).toBe(DEFAULT_MAX_EVENTS);
+    });
+
+    it("should deselect event when maxEvents trims it from the buffer", () => {
+      const store = devtoolsStoreApi.getState();
+
+      store.addEvent({
+        action: "add",
+        blockerId: "blocker-1",
+        timestamp: 1,
+      });
+      store.addEvent({
+        action: "add",
+        blockerId: "blocker-2",
+        timestamp: 2,
+      });
+
+      const selectedEventId = devtoolsStoreApi.getState().events[1].id;
+      store.selectEvent(selectedEventId);
+
+      store.setMaxEvents(1);
+
+      expect(devtoolsStoreApi.getState().selectedEventId).toBe(null);
     });
 
     it("should not add events when paused", () => {
@@ -210,6 +259,23 @@ describe("devtoolsStore", () => {
         "clear",
         "clear_scope",
       ]);
+    });
+
+    it("should deselect event when filter hides it", () => {
+      const store = devtoolsStoreApi.getState();
+
+      store.addEvent({
+        action: "add",
+        blockerId: "blocker-1",
+        timestamp: 1,
+        config: { scope: "checkout" },
+      });
+
+      const selectedEventId = devtoolsStoreApi.getState().events[0].id;
+      store.selectEvent(selectedEventId);
+      store.setFilter({ scopes: ["profile"] });
+
+      expect(devtoolsStoreApi.getState().selectedEventId).toBe(null);
     });
   });
 

@@ -8,6 +8,13 @@ interface TrackedBlocker {
   scope?: string | ReadonlyArray<string>;
 }
 
+const TERMINAL_ACTIONS = new Set<MiddlewareContext["action"]>([
+  "remove",
+  "timeout",
+  "clear",
+  "clear_scope",
+]);
+
 /**
  * Creates the devtools middleware that captures and records UI blocking events.
  *
@@ -61,19 +68,13 @@ interface TrackedBlocker {
 export function createDevtoolsMiddleware(): Middleware {
   // Track add timestamps for duration calculation
   const activeBlockers = new Map<string, TrackedBlocker>();
-  const terminalActions = new Set<MiddlewareContext["action"]>([
-    "remove",
-    "timeout",
-    "clear",
-    "clear_scope",
-  ]);
 
   const getDuration = (
     action: MiddlewareContext["action"],
     blockerId: string,
     timestamp: number
   ): number | undefined => {
-    if (!terminalActions.has(action)) {
+    if (!TERMINAL_ACTIONS.has(action)) {
       return undefined;
     }
 
