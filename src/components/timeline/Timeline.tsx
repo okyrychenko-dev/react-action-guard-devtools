@@ -7,8 +7,8 @@ import TimelineEmptyState from "./TimelineEmptyState";
 import TimelineToolbar from "./TimelineToolbar";
 
 function Timeline(): ReactElement {
-  const events = useDevtoolsStore(selectFilteredEvents);
-  const { selectedEventId, selectEvent, filter, setFilter } = useDevtoolsStore((state) => ({
+  const { events, selectedEventId, selectEvent, filter, setFilter } = useDevtoolsStore((state) => ({
+    events: selectFilteredEvents(state),
     selectedEventId: state.selectedEventId,
     selectEvent: state.selectEvent,
     filter: state.filter,

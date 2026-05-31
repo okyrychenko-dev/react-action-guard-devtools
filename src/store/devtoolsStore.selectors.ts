@@ -1,6 +1,64 @@
-import { DevtoolsEvent, DevtoolsStore } from "../types";
+import type { DevtoolsEvent, DevtoolsFilter, DevtoolsStore } from "../types";
 
 type ScopeValue = string | ReadonlyArray<string> | undefined;
+
+function createMemoizedSelector<TState, TFirstInput, TSecondInput, TResult>(
+  selectFirstInput: (state: TState) => TFirstInput,
+  selectSecondInput: (state: TState) => TSecondInput,
+  compute: (firstInput: TFirstInput, secondInput: TSecondInput) => TResult
+): (state: TState) => TResult {
+  let hasPreviousResult = false;
+  let previousFirstInput: TFirstInput;
+  let previousSecondInput: TSecondInput;
+  let previousResult: TResult;
+
+  return (state) => {
+    const firstInput = selectFirstInput(state);
+    const secondInput = selectSecondInput(state);
+
+    if (
+      hasPreviousResult &&
+      previousFirstInput === firstInput &&
+      previousSecondInput === secondInput
+    ) {
+      return previousResult;
+    }
+
+    const result = compute(firstInput, secondInput);
+
+    hasPreviousResult = true;
+    previousFirstInput = firstInput;
+    previousSecondInput = secondInput;
+    previousResult = result;
+
+    return result;
+  };
+}
+
+function createMemoizedSingleInputSelector<TState, TInput, TResult>(
+  selectInput: (state: TState) => TInput,
+  compute: (input: TInput) => TResult
+): (state: TState) => TResult {
+  let hasPreviousResult = false;
+  let previousInput: TInput;
+  let previousResult: TResult;
+
+  return (state) => {
+    const input = selectInput(state);
+
+    if (hasPreviousResult && previousInput === input) {
+      return previousResult;
+    }
+
+    const result = compute(input);
+
+    hasPreviousResult = true;
+    previousInput = input;
+    previousResult = result;
+
+    return result;
+  };
+}
 
 function normalizeScopes(scope: ScopeValue): ReadonlyArray<string> {
   if (!scope) {
@@ -58,30 +116,35 @@ function matchesSearchQuery(event: DevtoolsEvent, search: string): boolean {
   return matchesId || matchesReason || matchesScope;
 }
 
+export function matchesEventFilter(event: DevtoolsEvent, filter: DevtoolsFilter): boolean {
+  return (
+    matchesActionFilter(event, filter.actions) &&
+    matchesScopeFilter(event, filter.scopes) &&
+    matchesSearchQuery(event, filter.search)
+  );
+}
+
 /**
  * Selector for filtered events
  */
-export function selectFilteredEvents(state: DevtoolsStore): Array<DevtoolsEvent> {
-  const { events, filter } = state;
-
-  return events.filter((event) => {
-    return (
-      matchesActionFilter(event, filter.actions) &&
-      matchesScopeFilter(event, filter.scopes) &&
-      matchesSearchQuery(event, filter.search)
-    );
-  });
-}
+export const selectFilteredEvents = createMemoizedSelector(
+  (state: DevtoolsStore) => state.events,
+  (state: DevtoolsStore) => state.filter,
+  (events, filter) => events.filter((event) => matchesEventFilter(event, filter))
+);
 
 /**
  * Get unique scopes from all events (for filter dropdown)
  */
-export function selectUniqueScopes(state: DevtoolsStore): Array<string> {
-  const scopes = new Set<string>();
+export const selectUniqueScopes = createMemoizedSingleInputSelector(
+  (state: DevtoolsStore) => state.events,
+  (events) => {
+    const scopes = new Set<string>();
 
-  state.events.forEach((event) => {
-    getEventScopes(event).forEach((scope) => scopes.add(scope));
-  });
+    events.forEach((event) => {
+      getEventScopes(event).forEach((scope) => scopes.add(scope));
+    });
 
-  return Array.from(scopes).sort();
-}
+    return Array.from(scopes).sort();
+  }
+);

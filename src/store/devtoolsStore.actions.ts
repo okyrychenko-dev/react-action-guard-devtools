@@ -1,6 +1,7 @@
 import { DEFAULT_MAX_EVENTS, DEFAULT_TAB, createDefaultFilter } from "./devtoolsStore.constants";
+import { matchesEventFilter } from "./devtoolsStore.selectors";
 import type { StateCreator } from "zustand";
-import type { DevtoolsEvent, DevtoolsStore } from "../types";
+import type { DevtoolsEvent, DevtoolsFilter, DevtoolsStore } from "../types";
 
 /**
  * Devtools Store Slice
@@ -16,6 +17,7 @@ export const createDevtoolsActions: StateCreator<DevtoolsStore, [], [], Devtools
 
   const createEventId = (eventData: Omit<DevtoolsEvent, "id">): string => {
     eventCounter += 1;
+
     return `${String(eventData.timestamp)}-${eventData.blockerId}-${eventCounter.toString(36)}`;
   };
 
@@ -25,6 +27,49 @@ export const createDevtoolsActions: StateCreator<DevtoolsStore, [], [], Devtools
     }
 
     return events.slice(0, maxEvents);
+  };
+
+  const getVisibleSelectedEventId = (
+    events: Array<DevtoolsEvent>,
+    filter: DevtoolsFilter,
+    selectedEventId: string | null
+  ): string | null => {
+    if (selectedEventId === null) {
+      return null;
+    }
+
+    const selectedEventIsVisible = events.some(
+      (event) => event.id === selectedEventId && matchesEventFilter(event, filter)
+    );
+
+    if (!selectedEventIsVisible) {
+      return null;
+    }
+
+    return selectedEventId;
+  };
+
+  const getSelectedEventIdAfterAdd = (
+    eventsBeforeAdd: Array<DevtoolsEvent>,
+    maxEvents: number,
+    selectedEventId: string | null
+  ): string | null => {
+    if (selectedEventId === null) {
+      return null;
+    }
+
+    if (eventsBeforeAdd.length < maxEvents) {
+      return selectedEventId;
+    }
+
+    // The store trims after every write, so one add can evict only the oldest event.
+    const removedEventId = eventsBeforeAdd[maxEvents - 1]?.id;
+
+    if (removedEventId === selectedEventId) {
+      return null;
+    }
+
+    return selectedEventId;
   };
 
   const normalizeMaxEvents = (maxEvents: number): number => {
@@ -64,8 +109,16 @@ export const createDevtoolsActions: StateCreator<DevtoolsStore, [], [], Devtools
 
       set((state) => {
         const newEvents = [event, ...state.events];
+        const events = trimEvents(newEvents, state.maxEvents);
 
-        return { events: trimEvents(newEvents, state.maxEvents) };
+        return {
+          events,
+          selectedEventId: getSelectedEventIdAfterAdd(
+            state.events,
+            state.maxEvents,
+            state.selectedEventId
+          ),
+        };
       });
     },
 
@@ -114,16 +167,28 @@ export const createDevtoolsActions: StateCreator<DevtoolsStore, [], [], Devtools
      * @param filterUpdate - Partial filter update
      */
     setFilter: (filterUpdate): void => {
-      set((state) => ({
-        filter: { ...state.filter, ...filterUpdate },
-      }));
+      set((state) => {
+        const filter = { ...state.filter, ...filterUpdate };
+
+        return {
+          filter,
+          selectedEventId: getVisibleSelectedEventId(state.events, filter, state.selectedEventId),
+        };
+      });
     },
 
     /**
      * Reset filters to default
      */
     resetFilter: (): void => {
-      set({ filter: createDefaultFilter() });
+      set((state) => {
+        const filter = createDefaultFilter();
+
+        return {
+          filter,
+          selectedEventId: getVisibleSelectedEventId(state.events, filter, state.selectedEventId),
+        };
+      });
     },
 
     /**
@@ -150,10 +215,15 @@ export const createDevtoolsActions: StateCreator<DevtoolsStore, [], [], Devtools
     setMaxEvents: (max): void => {
       const maxEvents = normalizeMaxEvents(max);
 
-      set((state) => ({
-        maxEvents,
-        events: trimEvents(state.events, maxEvents),
-      }));
+      set((state) => {
+        const events = trimEvents(state.events, maxEvents);
+
+        return {
+          maxEvents,
+          events,
+          selectedEventId: getVisibleSelectedEventId(events, state.filter, state.selectedEventId),
+        };
+      });
     },
   };
 };

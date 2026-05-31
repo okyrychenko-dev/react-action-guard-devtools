@@ -137,6 +137,33 @@ describe("ActionGuardDevtools", () => {
 
     editableElement.remove();
   });
+
+  it("should ignore keyboard shortcuts from select elements", async () => {
+    const events: Array<DevtoolsEvent> = [
+      {
+        id: "event-1",
+        action: "add",
+        blockerId: "blocker-1",
+        timestamp: Date.now(),
+      },
+    ];
+    const selectElement = document.createElement("select");
+
+    document.body.appendChild(selectElement);
+    devtoolsStoreApi.setState({ events });
+
+    renderWithProviders(<ActionGuardDevtools defaultOpen={true} />);
+
+    await waitFor(() => {
+      expect(screen.getByText("Action Guard")).toBeInTheDocument();
+    });
+
+    fireEvent.keyDown(selectElement, { key: "c" });
+
+    expect(devtoolsStoreApi.getState().events).toHaveLength(1);
+
+    selectElement.remove();
+  });
 });
 
 describe("ActionGuardDevtoolsContent", () => {
