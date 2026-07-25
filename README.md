@@ -10,13 +10,17 @@
 
 - 📊 **Real-time Timeline** - Visual timeline of all blocking events with duration tracking
 - 🎯 **Active Blockers View** - See all currently active blockers at a glance
+- 📈 **Stats View** - Aggregate counts, durations, and most frequent scopes
 - 🔍 **Filtering** - Search by blocker ID, reason, or scope (advanced filters via store API)
 - ⏸️ **Pause/Resume** - Pause event recording to inspect specific moments
 - 📝 **Detailed Event Info** - View full configuration, duration, and state changes
+- 📤 **Export** - Copy the timeline to the clipboard or download it as JSON
+- ⚠️ **Stuck Detection** - Flags active blockers that outlive a configurable threshold
 - 🎨 **Customizable Position** - Place devtools panel on the left or right
 - 🚀 **Zero Config** - Works out of the box with automatic middleware registration
 - 🔒 **Production Safe** - Automatically disabled in production builds
 - 💾 **Event History** - Configurable event limit to manage memory usage
+- 🗄️ **Persisted Preferences** - Minimized state, active tab, and filters survive reloads
 - 🎨 **Clean UI** - Minimalistic design that doesn't interfere with your app
 
 ## Installation
@@ -31,16 +35,18 @@ pnpm add @okyrychenko-dev/react-action-guard-devtools
 
 This package requires the following peer dependencies:
 
-- [@okyrychenko-dev/react-action-guard](https://github.com/okyrychenko-dev/react-action-guard) ^1.0.4
+- [@okyrychenko-dev/react-action-guard](https://github.com/okyrychenko-dev/react-action-guard) ^1.0.5
 - [React](https://react.dev/) ^18.0.0 || ^19.0.0
 - [Zustand](https://zustand-demo.pmnd.rs/) ^5.0.0
 
 ## Quick Start
 
-Add the devtools component to your app root:
+Add the devtools component to your app root, and import the stylesheet once (e.g. in your entry file):
 
 ```jsx
 import { ActionGuardDevtools } from "@okyrychenko-dev/react-action-guard-devtools";
+// Import the styles once, anywhere in your app (entry file recommended):
+import "@okyrychenko-dev/react-action-guard-devtools/styles.css";
 
 function App() {
   return (
@@ -54,6 +60,10 @@ function App() {
 
 That's it! The devtools will automatically register middleware and start tracking all blocking events.
 
+> **Note:** Styles ship as a separate stylesheet
+> (`@okyrychenko-dev/react-action-guard-devtools/styles.css`) rather than being injected at
+> runtime, to stay SSR-safe. Without this import the panel works but is unstyled.
+
 ## Component API
 
 ### `<ActionGuardDevtools />`
@@ -62,13 +72,14 @@ The main devtools component that renders the toggle button and panel.
 
 #### Props
 
-| Prop               | Type                 | Default     | Description                                           |
-| ------------------ | -------------------- | ----------- | ----------------------------------------------------- |
-| `position`         | `DevtoolsPosition`   | `"right"`   | Position of the toggle button and panel               |
-| `defaultOpen`      | `boolean`            | `false`     | Whether the panel is open by default                  |
-| `maxEvents`        | `number`             | `200`       | Maximum number of events to store in history          |
-| `showInProduction` | `boolean`            | `false`     | Whether to show devtools in production                |
-| `store`            | `UIBlockingStoreApi` | `undefined` | Custom blocking store to observe instead of the global store |
+| Prop               | Type                 | Default     | Description                                                    |
+| ------------------ | -------------------- | ----------- | -------------------------------------------------------------- |
+| `position`         | `DevtoolsPosition`   | `"right"`   | Position of the toggle button and panel                        |
+| `defaultOpen`      | `boolean`            | `false`     | Whether the panel is open by default                           |
+| `maxEvents`        | `number`             | `200`       | Maximum number of events to store in history                   |
+| `stuckThresholdMs` | `number`             | `10000`     | Age (ms) after which an active blocker is flagged as stuck     |
+| `showInProduction` | `boolean`            | `false`     | Whether to show devtools in production                         |
+| `store`            | `UIBlockingStoreApi` | `undefined` | Blocking store to observe instead of the global store          |
 
 #### Position Options
 
@@ -118,6 +129,9 @@ function App() {
 
 `store` changes which blocking store is observed and where middleware is registered.
 Devtools panel state and event history remain shared inside the devtools package.
+Multiple devtools instances can safely observe the same store: they share one middleware
+registration, so events are not duplicated and the middleware remains active until the last
+instance unmounts.
 
 ## Advanced Usage
 
@@ -170,6 +184,7 @@ import {
   useDevtoolsStore,
   selectFilteredEvents,
   selectUniqueScopes,
+  selectEventStats,
 } from "@okyrychenko-dev/react-action-guard-devtools";
 
 function EventList() {
@@ -179,8 +194,12 @@ function EventList() {
   // Get list of unique scopes from all events
   const scopes = useDevtoolsStore(selectUniqueScopes);
 
+  // Get aggregate statistics (counts by action, durations, top scopes)
+  const stats = useDevtoolsStore(selectEventStats);
+
   return (
     <div>
+      <h3>Total events: {stats.total}</h3>
       <h3>Scopes: {scopes.join(", ")}</h3>
       <ul>
         {filteredEvents.map((event) => (
@@ -207,6 +226,8 @@ The timeline shows all blocking events in chronological order:
 - **Duration display**: Shows how long blockers were active
 - **Expandable details**: Click any event to see full configuration
 - **Scope indicators**: Visual tags showing which scopes are affected, including `clear_scope`
+- **Export**: Copy the currently filtered events to the clipboard, or download them as a JSON file
+  (with export metadata) — handy for bug reports
 
 ### Active Blockers View
 
@@ -215,6 +236,17 @@ See all currently active blockers with:
 - Priority sorting (highest first)
 - Scope and reason information
 - How long each blocker has been active
+- **Stuck detection**: Blockers active longer than `stuckThresholdMs` (default `10000`) are
+  flagged with a **Stuck** warning badge — a quick signal for a missing `unblock()`
+
+### Stats View
+
+Aggregate statistics over the recorded history:
+
+- Total event count
+- Average and maximum blocker durations
+- Event counts per action type
+- Most frequent scopes
 
 ### Filtering
 
@@ -240,6 +272,19 @@ When the panel is open (and focus is not in an input or editable element):
 - `Space` - Pause/Resume recording
 - `C` - Clear events
 
+### Persistence
+
+UI preferences are persisted to `localStorage` and restored across reloads:
+
+- Minimized state
+- Active tab
+- Filter settings
+
+The panel's **open state and `maxEvents` are not persisted** — they are owned by the `defaultOpen`
+and `maxEvents` props and re-applied on every load. Recorded events are also **never** persisted,
+since history belongs to a single session. Persistence is automatically skipped in environments
+without `localStorage` (e.g. SSR).
+
 ## TypeScript Support
 
 The package is written in TypeScript and includes full type definitions:
@@ -248,6 +293,7 @@ The package is written in TypeScript and includes full type definitions:
 import type {
   // Event types
   DevtoolsEvent,
+  DevtoolsEventStats,
   DevtoolsFilter,
 
   // Store types
