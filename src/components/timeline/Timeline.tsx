@@ -1,5 +1,6 @@
-import { ChangeEvent, ReactElement, useCallback, useEffect } from "react";
+import { ChangeEvent, ReactElement, useCallback, useEffect, useState } from "react";
 import { selectFilteredEvents, useDevtoolsStore } from "../../store";
+import { copyEventsToClipboard, downloadEventsAsJson } from "../../utils";
 import { EventDetails } from "../eventDetails";
 import { isFilterActive } from "./Timeline.utils";
 import TimelineContent from "./TimelineContent";
@@ -35,13 +36,47 @@ function Timeline(): ReactElement {
     selectEvent(null);
   }, [selectEvent]);
 
+  const [copyStatus, setCopyStatus] = useState<"idle" | "copied" | "failed">("idle");
+
+  const handleCopy = useCallback(() => {
+    void copyEventsToClipboard(events).then((ok) => {
+      setCopyStatus(ok ? "copied" : "failed");
+    });
+  }, [events]);
+
+  // Auto-clear the transient copy status.
+  useEffect(() => {
+    if (copyStatus === "idle") {
+      return;
+    }
+
+    const timeoutId = setTimeout(() => {
+      setCopyStatus("idle");
+    }, 2000);
+
+    return () => {
+      clearTimeout(timeoutId);
+    };
+  }, [copyStatus]);
+
+  const handleExport = useCallback(() => {
+    downloadEventsAsJson(events);
+  }, [events]);
+
   if (events.length === 0 && !isFilterActive(filter)) {
     return <TimelineEmptyState />;
   }
 
   return (
     <>
-      <TimelineToolbar search={filter.search} onSearchChange={handleSearchChange} />
+      <TimelineToolbar
+        search={filter.search}
+        hasEvents={events.length > 0}
+        copyStatus={copyStatus}
+        onSearchChange={handleSearchChange}
+        onCopy={handleCopy}
+        onExport={handleExport}
+      />
       <TimelineContent
         events={events}
         selectedEventId={selectedEventId}

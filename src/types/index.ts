@@ -1,5 +1,6 @@
 export type {
   DevtoolsEvent,
+  DevtoolsEventStats,
   DevtoolsFilter,
   DevtoolsPosition,
   DevtoolsState,

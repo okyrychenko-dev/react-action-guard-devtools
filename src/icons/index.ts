@@ -1,5 +1,7 @@
 export { BlockIcon } from "./Block";
 export { CloseIcon } from "./Close";
+export { CopyIcon } from "./Copy";
+export { DownloadIcon } from "./Download";
 export { MinimizeIcon } from "./Minimize";
 export { PauseIcon } from "./Pause";
 export { PlayIcon } from "./Play";

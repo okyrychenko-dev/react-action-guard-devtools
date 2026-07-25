@@ -15,3 +15,9 @@ export const createDefaultFilter = (): DevtoolsFilter => ({
 export const DEFAULT_MAX_EVENTS = 200;
 
 export const DEFAULT_TAB = "timeline" as const;
+
+/** localStorage key under which UI preferences are persisted. */
+export const DEVTOOLS_STORAGE_KEY = "react-action-guard-devtools";
+
+/** Bump when the persisted shape changes incompatibly. */
+export const DEVTOOLS_STORAGE_VERSION = 1;

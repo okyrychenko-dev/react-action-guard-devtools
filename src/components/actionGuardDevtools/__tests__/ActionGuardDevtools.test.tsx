@@ -1,5 +1,5 @@
 import { uiBlockingStoreApi } from "@okyrychenko-dev/react-action-guard";
-import { fireEvent, screen, waitFor } from "@testing-library/react";
+import { act, fireEvent, screen, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it } from "vitest";
 import { DEFAULT_FILTER, DEFAULT_MAX_EVENTS, DEFAULT_TAB, devtoolsStoreApi } from "../../../store";
 import { renderWithProviders } from "../../../test/utils";
@@ -163,6 +163,36 @@ describe("ActionGuardDevtools", () => {
     expect(devtoolsStoreApi.getState().events).toHaveLength(1);
 
     selectElement.remove();
+  });
+
+  it("should record each event once and keep middleware alive across instances", () => {
+    const first = renderWithProviders(<ActionGuardDevtools />);
+    renderWithProviders(<ActionGuardDevtools />);
+
+    // Two instances share one ref-counted middleware → exactly one event per action.
+    act(() => {
+      uiBlockingStoreApi.getState().addBlocker("blocker-1", {
+        scope: "x",
+        reason: "r",
+        priority: 1,
+      });
+    });
+    expect(
+      devtoolsStoreApi.getState().events.filter((event) => event.blockerId === "blocker-1")
+    ).toHaveLength(1);
+
+    // Unmounting one instance must not tear the middleware down for the other.
+    first.unmount();
+    act(() => {
+      uiBlockingStoreApi.getState().addBlocker("blocker-2", {
+        scope: "x",
+        reason: "r",
+        priority: 1,
+      });
+    });
+    expect(
+      devtoolsStoreApi.getState().events.some((event) => event.blockerId === "blocker-2")
+    ).toBe(true);
   });
 });
 

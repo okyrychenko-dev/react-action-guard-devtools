@@ -10,10 +10,11 @@ import type { UIBlockingStoreApi } from "../actionGuardDevtools";
 interface DevtoolsPanelProps {
   position: DevtoolsPosition;
   store?: UIBlockingStoreApi;
+  stuckThresholdMs?: number;
 }
 
 function DevtoolsPanel(props: DevtoolsPanelProps): ReactElement | null {
-  const { position, store } = props;
+  const { position, store, stuckThresholdMs } = props;
 
   const {
     isOpen,
@@ -58,7 +59,11 @@ function DevtoolsPanel(props: DevtoolsPanelProps): ReactElement | null {
       {!isMinimized && (
         <>
           <DevtoolsPanelTabs activeTab={activeTab} onSelectTab={setActiveTab} />
-          <DevtoolsPanelContent activeTab={activeTab} store={store} />
+          <DevtoolsPanelContent
+            activeTab={activeTab}
+            store={store}
+            stuckThresholdMs={stuckThresholdMs}
+          />
         </>
       )}
     </div>

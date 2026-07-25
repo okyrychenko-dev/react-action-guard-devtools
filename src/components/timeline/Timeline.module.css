@@ -18,6 +18,20 @@
   outline: none;
 }
 
+.copyStatus {
+  font-size: 11px;
+  white-space: nowrap;
+  color: var(--ag-success);
+}
+
+.copyStatus:empty {
+  display: none;
+}
+
+.copyStatusError {
+  color: rgb(var(--ag-error-rgb));
+}
+
 .eventList {
   list-style: none;
   margin: 0;
