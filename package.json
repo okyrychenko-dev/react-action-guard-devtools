@@ -11,9 +11,13 @@
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js",
       "require": "./dist/index.cjs"
-    }
+    },
+    "./styles.css": "./dist/index.css"
   },
-  "sideEffects": false,
+  "style": "./dist/index.css",
+  "sideEffects": [
+    "**/*.css"
+  ],
   "files": [
     "dist",
     "README.md",

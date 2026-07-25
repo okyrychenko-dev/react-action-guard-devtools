@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it } from "vitest";
-import { DEFAULT_MAX_EVENTS } from "../devtoolsStore.constants";
-import { selectFilteredEvents } from "../devtoolsStore.selectors";
+import { DEFAULT_MAX_EVENTS, DEVTOOLS_STORAGE_KEY } from "../devtoolsStore.constants";
+import { selectEventStats, selectFilteredEvents } from "../devtoolsStore.selectors";
 import { devtoolsStoreApi } from "../devtoolsStore.store";
 import type { DevtoolsEvent, DevtoolsStore } from "../../types";
 
@@ -556,6 +556,84 @@ describe("devtoolsStore", () => {
       const filtered = selectFilteredEvents(state);
       expect(filtered).toHaveLength(1);
       expect(filtered[0].scope).toBe("checkout");
+    });
+  });
+
+  describe("persistence", () => {
+    it("should persist UI preferences but never events, open state, or maxEvents", () => {
+      const store = devtoolsStoreApi.getState();
+      store.setOpen(true);
+      store.toggleMinimized();
+      store.setMaxEvents(50);
+      store.addEvent({ action: "add", blockerId: "persist-blocker", timestamp: 1_000 });
+
+      const raw = window.localStorage.getItem(DEVTOOLS_STORAGE_KEY);
+      expect(raw).not.toBeNull();
+
+      const serialized = raw ?? "";
+      // UI preferences are persisted.
+      expect(serialized).toContain('"isMinimized":true');
+      expect(serialized).toContain('"activeTab":"timeline"');
+      expect(serialized).toContain('"filter":');
+      // Prop-owned and session-only state are never written.
+      expect(serialized).not.toContain('"isOpen":');
+      expect(serialized).not.toContain('"maxEvents":');
+      expect(serialized).not.toContain('"events":');
+      expect(serialized).not.toContain('"selectedEventId":');
+      expect(serialized).not.toContain('"isPaused":');
+    });
+  });
+
+  describe("selectEventStats", () => {
+    it("should return zeroed stats for an empty history", () => {
+      devtoolsStoreApi.setState({ events: [] });
+
+      const stats = selectEventStats(devtoolsStoreApi.getState());
+
+      expect(stats.total).toBe(0);
+      expect(stats.byAction.add).toBe(0);
+      expect(stats.durationSampleCount).toBe(0);
+      expect(stats.averageDurationMs).toBe(0);
+      expect(stats.maxDurationMs).toBe(0);
+      expect(stats.topScopes).toEqual([]);
+    });
+
+    it("should aggregate counts, durations and top scopes", () => {
+      const events: Array<DevtoolsEvent> = [
+        { id: "1", action: "add", blockerId: "b1", timestamp: 1, config: { scope: "checkout" } },
+        {
+          id: "2",
+          action: "remove",
+          blockerId: "b1",
+          timestamp: 2,
+          duration: 400,
+          config: { scope: "checkout" },
+        },
+        {
+          id: "3",
+          action: "timeout",
+          blockerId: "b2",
+          timestamp: 3,
+          duration: 600,
+          config: { scope: "global" },
+        },
+      ];
+      devtoolsStoreApi.setState({ events });
+
+      const stats = selectEventStats(devtoolsStoreApi.getState());
+
+      expect(stats.total).toBe(3);
+      expect(stats.byAction.add).toBe(1);
+      expect(stats.byAction.remove).toBe(1);
+      expect(stats.byAction.timeout).toBe(1);
+      expect(stats.byAction.update).toBe(0);
+      expect(stats.durationSampleCount).toBe(2);
+      expect(stats.averageDurationMs).toBe(500);
+      expect(stats.maxDurationMs).toBe(600);
+      expect(stats.topScopes).toEqual([
+        { scope: "checkout", count: 2 },
+        { scope: "global", count: 1 },
+      ]);
     });
   });
 });

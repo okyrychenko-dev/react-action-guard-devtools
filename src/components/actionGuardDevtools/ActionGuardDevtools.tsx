@@ -1,7 +1,7 @@
 import { uiBlockingStoreApi } from "@okyrychenko-dev/react-action-guard";
 import { ReactElement, useEffect, useMemo, useRef } from "react";
-import { DEVTOOLS_MIDDLEWARE_NAME, createDevtoolsMiddleware } from "../../middleware";
 import { DEFAULT_MAX_EVENTS, useDevtoolsStore } from "../../store";
+import { acquireDevtoolsMiddleware } from "./acquireDevtoolsMiddleware";
 import { getDevtoolsKeyboardAction } from "./ActionGuardDevtools.utils";
 import ActionGuardDevtoolsContent from "./ActionGuardDevtoolsContent";
 import type { ActionGuardDevtoolsProps } from "./ActionGuardDevtools.types";
@@ -18,6 +18,7 @@ function ActionGuardDevtoolsInternal(
     position = "right",
     defaultOpen = false,
     maxEvents = DEFAULT_MAX_EVENTS,
+    stuckThresholdMs,
     store: customStore,
   } = props;
   const initialDefaultOpenRef = useRef(defaultOpen);
@@ -33,17 +34,9 @@ function ActionGuardDevtoolsInternal(
   // Get the store to use (custom or global)
   const targetStore = useMemo(() => customStore ?? uiBlockingStoreApi, [customStore]);
 
-  // Register middleware on mount
-  useEffect(() => {
-    const storeState = targetStore.getState();
-    const middleware = createDevtoolsMiddleware();
-
-    storeState.registerMiddleware(DEVTOOLS_MIDDLEWARE_NAME, middleware);
-
-    return () => {
-      storeState.unregisterMiddleware(DEVTOOLS_MIDDLEWARE_NAME);
-    };
-  }, [targetStore]);
+  // Register middleware on mount. Ref-counted per store so multiple devtools instances on the
+  // same store don't double-record events or tear each other's middleware down on unmount.
+  useEffect(() => acquireDevtoolsMiddleware(targetStore), [targetStore]);
 
   // Set initial open state once. defaultOpen is an initial value, not a controlled prop.
   useEffect(() => {
@@ -97,7 +90,13 @@ function ActionGuardDevtoolsInternal(
     };
   }, []);
 
-  return <ActionGuardDevtoolsContent position={position} store={customStore} />;
+  return (
+    <ActionGuardDevtoolsContent
+      position={position}
+      store={customStore}
+      stuckThresholdMs={stuckThresholdMs}
+    />
+  );
 }
 
 /**

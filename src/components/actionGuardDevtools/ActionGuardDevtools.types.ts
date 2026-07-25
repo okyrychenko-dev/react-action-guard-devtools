@@ -17,6 +17,11 @@ export interface ActionGuardDevtoolsProps {
   defaultOpen?: boolean;
   /** Maximum number of events to store */
   maxEvents?: number;
+  /**
+   * Age in milliseconds after which an active blocker is flagged as potentially
+   * stuck (a likely missing `unblock()`), shown with a warning badge (default: 10000).
+   */
+  stuckThresholdMs?: number;
   /** Whether to show in production (default: false) */
   showInProduction?: boolean;
   /**

@@ -149,13 +149,88 @@ describe("TimelineToolbar", () => {
   it("should call onSearchChange", () => {
     const onSearchChange = vi.fn();
 
-    renderWithProviders(<TimelineToolbar search="" onSearchChange={onSearchChange} />);
+    renderWithProviders(
+      <TimelineToolbar
+        search=""
+        hasEvents
+        copyStatus="idle"
+        onSearchChange={onSearchChange}
+        onCopy={vi.fn()}
+        onExport={vi.fn()}
+      />
+    );
 
     fireEvent.change(screen.getByPlaceholderText("Search by ID or reason..."), {
       target: { value: "test" },
     });
 
     expect(onSearchChange).toHaveBeenCalledTimes(1);
+  });
+
+  it("should call copy and export handlers", () => {
+    const onCopy = vi.fn();
+    const onExport = vi.fn();
+
+    renderWithProviders(
+      <TimelineToolbar
+        search=""
+        hasEvents
+        copyStatus="idle"
+        onSearchChange={vi.fn()}
+        onCopy={onCopy}
+        onExport={onExport}
+      />
+    );
+
+    fireEvent.click(screen.getByTitle("Copy events as JSON"));
+    fireEvent.click(screen.getByTitle("Download events as JSON"));
+
+    expect(onCopy).toHaveBeenCalledTimes(1);
+    expect(onExport).toHaveBeenCalledTimes(1);
+  });
+
+  it("should disable copy and export when there are no events", () => {
+    renderWithProviders(
+      <TimelineToolbar
+        search=""
+        hasEvents={false}
+        copyStatus="idle"
+        onSearchChange={vi.fn()}
+        onCopy={vi.fn()}
+        onExport={vi.fn()}
+      />
+    );
+
+    expect(screen.getByTitle("Copy events as JSON")).toBeDisabled();
+    expect(screen.getByTitle("Download events as JSON")).toBeDisabled();
+  });
+
+  it("should surface the copy status to assistive tech", () => {
+    const { rerender } = renderWithProviders(
+      <TimelineToolbar
+        search=""
+        hasEvents
+        copyStatus="copied"
+        onSearchChange={vi.fn()}
+        onCopy={vi.fn()}
+        onExport={vi.fn()}
+      />
+    );
+
+    expect(screen.getByRole("status")).toHaveTextContent("Copied");
+
+    rerender(
+      <TimelineToolbar
+        search=""
+        hasEvents
+        copyStatus="failed"
+        onSearchChange={vi.fn()}
+        onCopy={vi.fn()}
+        onExport={vi.fn()}
+      />
+    );
+
+    expect(screen.getByRole("status")).toHaveTextContent("Copy failed");
   });
 });
 

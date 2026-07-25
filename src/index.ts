@@ -2,7 +2,12 @@
 export { ActionGuardDevtools } from "./components";
 
 // Store (for advanced usage)
-export { useDevtoolsStore, selectFilteredEvents, selectUniqueScopes } from "./store";
+export {
+  useDevtoolsStore,
+  selectFilteredEvents,
+  selectUniqueScopes,
+  selectEventStats,
+} from "./store";
 
 // Middleware (for manual registration)
 export {
@@ -13,6 +18,7 @@ export {
 // Types
 export type {
   DevtoolsEvent,
+  DevtoolsEventStats,
   DevtoolsFilter,
   DevtoolsPosition,
   DevtoolsState,

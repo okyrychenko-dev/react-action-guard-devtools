@@ -1,6 +1,9 @@
-import type { DevtoolsEvent, DevtoolsFilter, DevtoolsStore } from "../types";
+import type { DevtoolsEvent, DevtoolsEventStats, DevtoolsFilter, DevtoolsStore } from "../types";
 
 type ScopeValue = string | ReadonlyArray<string> | undefined;
+
+/** Number of most-frequent scopes surfaced by the stats selector. */
+const TOP_SCOPES_LIMIT = 5;
 
 function createMemoizedSelector<TState, TFirstInput, TSecondInput, TResult>(
   selectFirstInput: (state: TState) => TFirstInput,
@@ -146,5 +149,55 @@ export const selectUniqueScopes = createMemoizedSingleInputSelector(
     });
 
     return Array.from(scopes).sort();
+  }
+);
+
+/**
+ * Aggregate statistics over the recorded event history (for the Stats tab).
+ */
+export const selectEventStats = createMemoizedSingleInputSelector(
+  (state: DevtoolsStore) => state.events,
+  (events): DevtoolsEventStats => {
+    const byAction: Record<DevtoolsEvent["action"], number> = {
+      add: 0,
+      update: 0,
+      remove: 0,
+      timeout: 0,
+      clear: 0,
+      clear_scope: 0,
+    };
+    const scopeCounts = new Map<string, number>();
+
+    let durationSum = 0;
+    let durationSampleCount = 0;
+    let maxDurationMs = 0;
+
+    events.forEach((event) => {
+      byAction[event.action] += 1;
+
+      getEventScopes(event).forEach((scope) => {
+        scopeCounts.set(scope, (scopeCounts.get(scope) ?? 0) + 1);
+      });
+
+      if (typeof event.duration === "number") {
+        durationSum += event.duration;
+        durationSampleCount += 1;
+        maxDurationMs = Math.max(maxDurationMs, event.duration);
+      }
+    });
+
+    const topScopes = Array.from(scopeCounts.entries())
+      .map(([scope, count]) => ({ scope, count }))
+      .sort((a, b) => b.count - a.count)
+      .slice(0, TOP_SCOPES_LIMIT);
+
+    return {
+      total: events.length,
+      byAction,
+      durationSampleCount,
+      averageDurationMs: durationSampleCount === 0 ? 0 : durationSum / durationSampleCount,
+      maxDurationMs,
+      topScopes,
+    };
   }
 );

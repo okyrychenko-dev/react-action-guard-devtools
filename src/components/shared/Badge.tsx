@@ -6,13 +6,14 @@ interface BadgeProps {
   children: ReactNode;
   className?: string;
   style?: CSSProperties;
+  title?: string;
 }
 
 function Badge(props: BadgeProps): ReactElement {
-  const { children, className, style } = props;
+  const { children, className, style, title } = props;
 
   return (
-    <span className={clsx(sharedStyles.badge, className)} style={style}>
+    <span className={clsx(sharedStyles.badge, className)} style={style} title={title}>
       {children}
     </span>
   );

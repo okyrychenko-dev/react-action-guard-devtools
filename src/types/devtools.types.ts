@@ -50,6 +50,24 @@ export interface DevtoolsFilter {
 export type DevtoolsPosition = "left" | "right";
 
 /**
+ * Aggregate statistics derived from the recorded event history.
+ */
+export interface DevtoolsEventStats {
+  /** Total number of recorded events */
+  total: number;
+  /** Number of events per action type */
+  byAction: Record<BlockingAction, number>;
+  /** Number of events that carry a `duration` (remove/timeout) */
+  durationSampleCount: number;
+  /** Average duration (ms) across events that carry a duration */
+  averageDurationMs: number;
+  /** Longest recorded duration (ms) */
+  maxDurationMs: number;
+  /** Most frequent scopes, sorted by event count (descending) */
+  topScopes: Array<{ scope: string; count: number }>;
+}
+
+/**
  * Devtools store state
  */
 export interface DevtoolsState {
@@ -62,7 +80,7 @@ export interface DevtoolsState {
   /** Whether the panel is minimized */
   isMinimized: boolean;
   /** Active tab in the panel */
-  activeTab: "timeline" | "blockers";
+  activeTab: "timeline" | "blockers" | "stats";
   /** Current filter settings */
   filter: DevtoolsFilter;
   /** Selected event for detail view */
