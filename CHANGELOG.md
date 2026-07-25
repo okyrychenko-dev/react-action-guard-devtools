@@ -7,6 +7,45 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.0] - 2026-07-25
+
+### Added
+
+- Timeline toolbar can now copy the filtered events to the clipboard or download them as a JSON
+  file (with export metadata), making bug reports easy to attach.
+- UI preferences (panel minimized state, active tab, and filters) are persisted to `localStorage`
+  and restored across reloads. Prop-owned state (`defaultOpen`, `maxEvents`) and recorded events
+  are never persisted.
+- Active blockers that stay open longer than a configurable threshold are flagged as **Stuck** with
+  a warning badge — a quick signal for a missing `unblock()`. Configure via the new
+  `stuckThresholdMs` prop on `ActionGuardDevtools` (default: 10000ms).
+- New **Stats** tab summarizing the recorded history: total events, per-action counts,
+  average/maximum durations, and the most frequent scopes. The aggregation is exposed publicly as
+  the `selectEventStats` selector (with the `DevtoolsEventStats` type).
+- Styles are now published as a dedicated `./styles.css` export
+  (`@okyrychenko-dev/react-action-guard-devtools/styles.css`). Import it once in your app — see the
+  Quick Start.
+
+### Changed
+
+- Refactored devtools store selectors onto reusable memoization helpers (`createMemoizedSelector` /
+  `createMemoizedSingleInputSelector`), replacing module-level cache state.
+- Multiple `ActionGuardDevtools` instances observing the same blocking store now share one
+  reference-counted middleware registration. Events are recorded once, and unmounting one instance
+  no longer disconnects the others.
+- Timeline selection is cleared when the selected event is hidden by a filter or removed after the
+  event limit is reduced.
+- `package.json` `sideEffects` now allows CSS files (instead of a blanket `false`) so the stylesheet
+  is not tree-shaken away by consumer bundlers.
+- Updated `@okyrychenko-dev/react-action-guard` compatibility to `^1.0.5` and
+  `@okyrychenko-dev/react-zustand-toolkit` to `^0.4.2`.
+
+### Performance
+
+- `addEvent` no longer rescans the full event history to revalidate the timeline selection; it now
+  only checks whether the selected event was evicted from the buffer (O(1)).
+- Store consumers subscribe only to the state slices they use, reducing avoidable rerenders.
+
 ## [0.2.4] - 2026-05-28
 
 ### Fixed
@@ -140,7 +179,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Source maps included
 - Comprehensive JSDoc documentation
 
-[Unreleased]: https://github.com/okyrychenko-dev/react-action-guard-devtools/compare/v0.2.3...HEAD
+[Unreleased]: https://github.com/okyrychenko-dev/react-action-guard-devtools/compare/v0.3.0...HEAD
+[0.3.0]: https://github.com/okyrychenko-dev/react-action-guard-devtools/compare/v0.2.4...v0.3.0
+[0.2.4]: https://github.com/okyrychenko-dev/react-action-guard-devtools/compare/v0.2.3...v0.2.4
 [0.2.3]: https://github.com/okyrychenko-dev/react-action-guard-devtools/compare/v0.2.2...v0.2.3
 [0.2.2]: https://github.com/okyrychenko-dev/react-action-guard-devtools/compare/v0.2.1...v0.2.2
 [0.2.1]: https://github.com/okyrychenko-dev/react-action-guard-devtools/compare/v0.2.0...v0.2.1
